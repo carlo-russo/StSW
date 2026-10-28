@@ -90,6 +90,7 @@
     <Compile Include="Controls\CircularProgressRing.xaml.cs">
       <DependentUpon>CircularProgressRing.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Models\RingSessionSegment.cs" />
     <Compile Include="Models\SessionModel.cs" />
     <Compile Include="Models\SessionRecord.cs" />
     <Compile Include="Models\StatisticsModels.cs" />

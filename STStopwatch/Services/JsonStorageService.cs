@@ -14,10 +14,17 @@ namespace STStopwatch.Services
         private readonly string _recordsFilePath;
         private readonly object _fileLock = new object();
 
-        public JsonStorageService()
+        public JsonStorageService(string customDirectory = null)
         {
-            string appData = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
-            _storageDirectory = Path.Combine(appData, "StartToday", "STStopwatch");
+            if (!string.IsNullOrEmpty(customDirectory))
+            {
+                _storageDirectory = customDirectory;
+            }
+            else
+            {
+                string appData = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
+                _storageDirectory = Path.Combine(appData, "StartToday", "STStopwatch");
+            }
             _settingsFilePath = Path.Combine(_storageDirectory, "settings.json");
             _recordsFilePath = Path.Combine(_storageDirectory, "sessions.json");
 

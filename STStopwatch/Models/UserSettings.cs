@@ -22,6 +22,12 @@ namespace STStopwatch.Models
         public double WindowTop { get; set; }
 
         [DataMember]
+        public double GlobalTargetDurationSeconds { get; set; }
+
+        [DataMember]
+        public string CustomSessionLabelTemplate { get; set; }
+
+        [DataMember]
         public double[] SessionTargetsInSeconds { get; set; }
 
         public UserSettings()
@@ -31,8 +37,9 @@ namespace STStopwatch.Models
             IsMinimalMode = false;
             WindowLeft = -1;
             WindowTop = -1;
+            GlobalTargetDurationSeconds = 3600.0; // 1 hour default
+            CustomSessionLabelTemplate = "Session {0:D2}";
 
-            // Default 1 hour (3600 seconds) for each of the 12 sessions
             SessionTargetsInSeconds = new double[12];
             for (int i = 0; i < 12; i++)
             {

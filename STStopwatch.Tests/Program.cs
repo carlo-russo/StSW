@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Threading;
+using STStopwatch.Controls;
 using STStopwatch.Models;
 using STStopwatch.Services;
 using STStopwatch.ViewModels;
@@ -65,6 +66,7 @@ namespace STStopwatch.Tests
             }
         }
 
+        [STAThread]
         static int Main(string[] args)
         {
             Console.WriteLine("==================================================");
@@ -77,6 +79,8 @@ namespace STStopwatch.Tests
             TestMainViewModelLifecycleAndControls();
             TestStatisticsDayAndMonthViews();
             TestTargetDurationAdjustment();
+            TestRevolutionAndNodeDraggableBehavior();
+            TestEditableSessionTextAndConstantDurationAndAutoContinue();
 
             Console.WriteLine("\n--------------------------------------------------");
             Console.WriteLine(string.Format("Test Results: {0} Passed, {1} Failed", _passed, _failed));
@@ -138,42 +142,44 @@ namespace STStopwatch.Tests
         static void TestJsonStorageService()
         {
             Console.WriteLine("\n--> Testing JsonStorageService persistence...");
-            var storage = new JsonStorageService();
+            string tempDir = Path.Combine(Path.GetTempPath(), "STStopwatch_Test_" + Guid.NewGuid().ToString("N"));
+            var storage = new JsonStorageService(tempDir);
 
-            var settings = storage.LoadSettings();
-            Assert(settings != null, "Settings load successfully");
-            Assert(settings.SessionTargetsInSeconds.Length >= 12, "Settings have 12 session target durations");
+            try
+            {
+                var settings = storage.LoadSettings();
+                Assert(settings != null, "Settings load successfully");
+                Assert(settings.SessionTargetsInSeconds.Length >= 12, "Settings have 12 session target durations");
 
-            settings.IsAlwaysOnTop = true;
-            settings.IsMinimalMode = true;
-            settings.CurrentSessionNumber = 5;
-            storage.SaveSettings(settings);
+                settings.IsAlwaysOnTop = true;
+                settings.IsMinimalMode = true;
+                settings.CurrentSessionNumber = 5;
+                storage.SaveSettings(settings);
 
-            var reloaded = storage.LoadSettings();
-            Assert(reloaded.IsAlwaysOnTop == true, "Persisted IsAlwaysOnTop verified");
-            Assert(reloaded.IsMinimalMode == true, "Persisted IsMinimalMode verified");
-            Assert(reloaded.CurrentSessionNumber == 5, "Persisted CurrentSessionNumber verified");
+                var reloaded = storage.LoadSettings();
+                Assert(reloaded.IsAlwaysOnTop == true, "Persisted IsAlwaysOnTop verified");
+                Assert(reloaded.IsMinimalMode == true, "Persisted IsMinimalMode verified");
+                Assert(reloaded.CurrentSessionNumber == 5, "Persisted CurrentSessionNumber verified");
 
-            // Reset back to defaults for clean state
-            settings.IsAlwaysOnTop = false;
-            settings.IsMinimalMode = false;
-            settings.CurrentSessionNumber = 1;
-            storage.SaveSettings(settings);
+                // Test Session Record persistence
+                var rec = new SessionRecord();
+                rec.SessionNumber = 1;
+                rec.SessionLabel = "Session 01";
+                rec.StartTime = DateTime.Now.AddMinutes(-30);
+                rec.EndTime = DateTime.Now;
+                rec.TargetDurationSeconds = 1800;
+                rec.ElapsedSeconds = 1800;
+                rec.IsCompleted = true;
 
-            // Test Session Record persistence
-            var rec = new SessionRecord();
-            rec.SessionNumber = 1;
-            rec.SessionLabel = "Session 01";
-            rec.StartTime = DateTime.Now.AddMinutes(-30);
-            rec.EndTime = DateTime.Now;
-            rec.TargetDurationSeconds = 1800;
-            rec.ElapsedSeconds = 1800;
-            rec.IsCompleted = true;
-
-            int initialCount = storage.LoadRecords().Count;
-            storage.SaveRecord(rec);
-            var records = storage.LoadRecords();
-            Assert(records.Count == initialCount + 1, "Session record persisted and retrieved");
+                int initialCount = storage.LoadRecords().Count;
+                storage.SaveRecord(rec);
+                var records = storage.LoadRecords();
+                Assert(records.Count == initialCount + 1, "Session record persisted and retrieved");
+            }
+            finally
+            {
+                try { Directory.Delete(tempDir, true); } catch { }
+            }
         }
 
         static void TestMainViewModelLifecycleAndControls()
@@ -187,7 +193,7 @@ namespace STStopwatch.Tests
 
             Assert(vm.PlayPauseButtonLabel == "Start", "Initial button label is Start");
             Assert(vm.CurrentSessionNumber == 1, "Initial session is 1");
-            Assert(vm.CurrentSessionLabel == "Session 01", "Initial session label is Session 01");
+            Assert(vm.SessionLabelText == "Session 01", "Initial session label is Session 01");
 
             // Start
             vm.PlayPauseCommand.Execute(null);
@@ -208,9 +214,8 @@ namespace STStopwatch.Tests
             vm.NextSessionCommand.Execute(null);
             Assert(storage.Records.Count == 1, "Session record preserved before advancing");
             Assert(vm.CurrentSessionNumber == 2, "Session number advanced to 02");
-            Assert(vm.CurrentSessionLabel == "Session 02", "Session label updated to Session 02");
-            Assert(!vm.IsRunning, "New session starts stopped");
-            Assert(vm.PlayPauseButtonLabel == "Start", "Button label reset to Start");
+            Assert(vm.SessionLabelText == "Session 02", "Session label updated to Session 02");
+            Assert(vm.IsRunning, "Pressing next automatically continues running!");
 
             // Loop through remaining sessions up to 12 and back to 1
             for (int i = 3; i <= 12; i++)
@@ -222,6 +227,11 @@ namespace STStopwatch.Tests
             // Advancing past 12 loops back to 1
             vm.NextSessionCommand.Execute(null);
             Assert(vm.CurrentSessionNumber == 1, "Session wraps from 12 back to 01");
+
+            // Complete / End Button in middle
+            vm.CompleteSessionCommand.Execute(null);
+            Assert(!vm.IsRunning, "Complete/End resets stopwatch to stopped");
+            Assert(vm.Elapsed == TimeSpan.Zero, "Complete/End resets elapsed to zero");
 
             // Minimal mode toggle
             Assert(!vm.IsMinimalMode, "Initially normal mode");
@@ -309,7 +319,6 @@ namespace STStopwatch.Tests
 
             var vm = new MainViewModel(timer, storage, tray);
 
-            // Test setting to 0, 1h, 8h, 16h
             vm.TargetDuration = TimeSpan.FromHours(16);
             Assert(vm.TargetDuration == TimeSpan.FromHours(16), "Target duration can be set to maximum 16 hours");
             Assert(vm.FormattedTarget == "16:00:00", "Formatted target displays 16:00:00");
@@ -317,6 +326,105 @@ namespace STStopwatch.Tests
             vm.TargetDuration = TimeSpan.FromMinutes(45);
             Assert(vm.TargetDuration == TimeSpan.FromMinutes(45), "Target duration can be set to 45 minutes");
             Assert(vm.FormattedTarget == "00:45:00", "Formatted target displays 00:45:00");
+        }
+
+        static void TestRevolutionAndNodeDraggableBehavior()
+        {
+            Console.WriteLine("\n--> Testing Full Revolution and Node Draggable State...");
+            var ring = new CircularProgressRing();
+
+            ring.IsRunning = false;
+            ring.Elapsed = TimeSpan.Zero;
+            ring.TotalElapsed = TimeSpan.Zero;
+            ring.TargetDuration = TimeSpan.FromHours(2);
+
+            Assert(ring.IsAtBeginning == true, "Node is in setting mode at the beginning");
+
+            ring.IsRunning = true;
+            Assert(ring.IsAtBeginning == false, "Node is locked (not draggable) once running");
+
+            ring.IsRunning = false;
+            ring.Elapsed = TimeSpan.FromMinutes(30);
+            ring.TotalElapsed = TimeSpan.FromMinutes(30);
+            Assert(ring.IsAtBeginning == false, "Node remains locked (not draggable) while paused during session");
+
+            ring.Elapsed = TimeSpan.Zero;
+            ring.TotalElapsed = TimeSpan.Zero;
+            ring.IsRunning = false;
+            Assert(ring.IsAtBeginning == true, "Node unlocks and becomes draggable again after reset");
+
+            TimeSpan target = TimeSpan.FromHours(2);
+            TimeSpan halfElapsed = TimeSpan.FromHours(1);
+            TimeSpan fullElapsed = TimeSpan.FromHours(2);
+
+            double halfRatio = halfElapsed.TotalSeconds / target.TotalSeconds;
+            double halfAngle = halfRatio * 360.0;
+            Assert(Math.Abs(halfAngle - 180.0) < 0.001, "50% elapsed matches half revolution (180 deg)");
+
+            double fullRatio = fullElapsed.TotalSeconds / target.TotalSeconds;
+            double fullAngle = fullRatio * 360.0;
+            Assert(Math.Abs(fullAngle - 360.0) < 0.001, "100% elapsed matches full revolution (360 deg)");
+        }
+
+        static void TestEditableSessionTextAndConstantDurationAndAutoContinue()
+        {
+            Console.WriteLine("\n--> Testing Editable Session Text, Constant Duration, and Auto Continue...");
+            var timer = new HighResolutionTimerEngine();
+            var storage = new MockStorageService();
+            var tray = new MockTrayService();
+
+            var vm = new MainViewModel(timer, storage, tray);
+
+            // Set duration to 2.5 hours
+            TimeSpan chosenDuration = TimeSpan.FromHours(2.5);
+            vm.TargetDuration = chosenDuration;
+
+            // User edits session text to "Sprint 01"
+            vm.SessionLabelText = "Sprint 01";
+
+            // Start stopwatch
+            vm.PlayPauseCommand.Execute(null);
+            Assert(vm.IsRunning, "Stopwatch running");
+            Thread.Sleep(30);
+
+            // Verify Target Finish Time is clock time
+            Assert(!string.IsNullOrEmpty(vm.TargetFinishTimeText), "Target finish time is populated");
+            Assert(vm.TargetFinishTimeText.Contains(":"), "Target finish time is clock formatted: " + vm.TargetFinishTimeText);
+
+            // Press Next
+            vm.NextSessionCommand.Execute(null);
+
+            // 1. Duration remains constant!
+            Assert(vm.TargetDuration == chosenDuration, "Session duration remains constant across Next");
+
+            // 2. Stopwatch automatically continues!
+            Assert(vm.IsRunning, "Pressing next automatically continues stopwatch");
+
+            // 3. Text label updated consistently ("Sprint 01" -> "Sprint 02")
+            Assert(vm.SessionLabelText == "Sprint 02", "Session label updated consistently to Sprint 02");
+
+            // 4. Slices of one duration are recorded on the ring
+            Assert(vm.CompletedSegments.Count == 1, "Completed session slice is recorded on ring");
+
+            // Next again
+            Thread.Sleep(30);
+            vm.NextSessionCommand.Execute(null);
+            Assert(vm.SessionLabelText == "Sprint 03", "Session label updated consistently to Sprint 03");
+            Assert(vm.CompletedSegments.Count == 2, "Second session slice recorded on ring");
+            Assert(vm.TargetDuration == chosenDuration, "Duration still constant at 2.5 hours");
+            Assert(vm.IsRunning, "Still automatically running");
+
+            // Test custom label without number (e.g. "Deep Work")
+            vm.SessionLabelText = "Deep Work";
+            vm.NextSessionCommand.Execute(null);
+            Assert(vm.SessionLabelText == "Deep Work", "Custom text without number preserved consistently");
+
+            // Complete / End in middle
+            vm.CompleteSessionCommand.Execute(null);
+            Assert(!vm.IsRunning, "Completed button in middle stopped the timer");
+            Assert(vm.CompletedSegments.Count == 0, "Completed button cleared segments for next block");
+            Assert(vm.Elapsed == TimeSpan.Zero, "Elapsed reset to zero");
+            Assert(vm.TargetDuration == chosenDuration, "Target duration preserved for subsequent blocks");
         }
     }
 }

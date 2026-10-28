@@ -1,5 +1,7 @@
 using System;
+using System.Collections.ObjectModel;
 using System.Media;
+using System.Text.RegularExpressions;
 using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Threading;
@@ -18,13 +20,19 @@ namespace STStopwatch.ViewModels
 
         private SessionModel[] _sessions;
         private int _currentSessionIndex; // 0 to 11
-        private TimeSpan _elapsed;
+        private TimeSpan _currentSessionElapsed;
+        private TimeSpan _blockCompletedElapsed;
+        private TimeSpan _globalTargetDuration;
+        private string _sessionLabelText;
+        private string _targetFinishTimeText;
         private double _progress;
         private bool _isMinimalMode;
         private bool _isAlwaysOnTop;
         private bool _isStatisticsOpen;
         private DateTime _sessionStartTime;
         private bool _targetNotificationFired;
+
+        private ObservableCollection<RingSessionSegment> _completedSegments;
 
         public MainViewModel(ITimerEngine timerEngine, IStorageService storageService, ITrayService trayService)
         {
@@ -33,6 +41,7 @@ namespace STStopwatch.ViewModels
             _trayService = trayService;
 
             _sessions = SessionModel.CreateDefault12Sessions();
+            _completedSegments = new ObservableCollection<RingSessionSegment>();
             StatisticsVM = new StatisticsViewModel(_storageService);
 
             // Load settings
@@ -40,23 +49,21 @@ namespace STStopwatch.ViewModels
             _isAlwaysOnTop = settings.IsAlwaysOnTop;
             _isMinimalMode = settings.IsMinimalMode;
 
-            // Load target durations per session
-            if (settings.SessionTargetsInSeconds != null)
+            // Global constant target duration
+            if (settings.GlobalTargetDurationSeconds >= 60.0)
             {
-                for (int i = 0; i < Math.Min(12, settings.SessionTargetsInSeconds.Length); i++)
-                {
-                    double sec = settings.SessionTargetsInSeconds[i];
-                    if (sec > 0)
-                    {
-                        _sessions[i].TargetDuration = TimeSpan.FromSeconds(sec);
-                    }
-                }
+                _globalTargetDuration = TimeSpan.FromSeconds(settings.GlobalTargetDurationSeconds);
+            }
+            else
+            {
+                _globalTargetDuration = TimeSpan.FromHours(1); // Default 1 hour
             }
 
             int sessNum = settings.CurrentSessionNumber;
             if (sessNum < 1 || sessNum > 12) sessNum = 1;
             _currentSessionIndex = sessNum - 1;
 
+            _sessionLabelText = string.Format("Session {0:D2}", CurrentSessionNumber);
             _sessionStartTime = DateTime.Now;
 
             // Setup UI Dispatcher Timer (~30 FPS)
@@ -67,7 +74,7 @@ namespace STStopwatch.ViewModels
 
             // Commands
             PlayPauseCommand = new RelayCommand(ExecutePlayPause);
-            ResetCommand = new RelayCommand(ExecuteReset, CanExecuteReset);
+            CompleteSessionCommand = new RelayCommand(ExecuteCompleteSession, CanExecuteCompleteSession);
             NextSessionCommand = new RelayCommand(ExecuteNextSession);
             ToggleMinimalModeCommand = new RelayCommand(ExecuteToggleMinimalMode);
             ToggleAlwaysOnTopCommand = new RelayCommand(ExecuteToggleAlwaysOnTop);
@@ -85,6 +92,11 @@ namespace STStopwatch.ViewModels
             get { return _sessions; }
         }
 
+        public ObservableCollection<RingSessionSegment> CompletedSegments
+        {
+            get { return _completedSegments; }
+        }
+
         public SessionModel CurrentSession
         {
             get { return _sessions[_currentSessionIndex]; }
@@ -93,11 +105,6 @@ namespace STStopwatch.ViewModels
         public int CurrentSessionNumber
         {
             get { return _currentSessionIndex + 1; }
-        }
-
-        public string CurrentSessionLabel
-        {
-            get { return string.Format("Session {0:D2}", CurrentSessionNumber); }
         }
 
         public string CurrentSessionPillText
@@ -110,15 +117,25 @@ namespace STStopwatch.ViewModels
             get { return CurrentSession.ThemeBrush; }
         }
 
-        public TimeSpan TargetDuration
+        public string SessionLabelText
         {
-            get { return CurrentSession.TargetDuration; }
+            get { return _sessionLabelText; }
             set
             {
-                if (CurrentSession.TargetDuration != value)
+                if (SetProperty(ref _sessionLabelText, value, "SessionLabelText"))
                 {
-                    CurrentSession.TargetDuration = value;
-                    OnPropertyChanged("TargetDuration");
+                    SaveSettings();
+                }
+            }
+        }
+
+        public TimeSpan TargetDuration
+        {
+            get { return _globalTargetDuration; }
+            set
+            {
+                if (SetProperty(ref _globalTargetDuration, value, "TargetDuration"))
+                {
                     OnPropertyChanged("FormattedTarget");
                     SaveSettings();
                     UpdateTimerDisplay();
@@ -126,24 +143,35 @@ namespace STStopwatch.ViewModels
             }
         }
 
+        public string TargetFinishTimeText
+        {
+            get { return _targetFinishTimeText; }
+            private set { SetProperty(ref _targetFinishTimeText, value, "TargetFinishTimeText"); }
+        }
+
         public TimeSpan Elapsed
         {
-            get { return _elapsed; }
+            get { return _currentSessionElapsed; }
             private set
             {
-                if (SetProperty(ref _elapsed, value, "Elapsed"))
+                if (SetProperty(ref _currentSessionElapsed, value, "Elapsed"))
                 {
                     OnPropertyChanged("FormattedElapsed");
                 }
             }
         }
 
+        public TimeSpan TotalElapsed
+        {
+            get { return _blockCompletedElapsed + _currentSessionElapsed; }
+        }
+
         public string FormattedElapsed
         {
             get
             {
-                int hours = (int)_elapsed.TotalHours;
-                return string.Format("{0:D2}:{1:D2}:{2:D2}", hours, _elapsed.Minutes, _elapsed.Seconds);
+                int hours = (int)_currentSessionElapsed.TotalHours;
+                return string.Format("{0:D2}:{1:D2}:{2:D2}", hours, _currentSessionElapsed.Minutes, _currentSessionElapsed.Seconds);
             }
         }
 
@@ -169,7 +197,7 @@ namespace STStopwatch.ViewModels
 
         public bool IsPaused
         {
-            get { return !_timerEngine.IsRunning && _timerEngine.Elapsed > TimeSpan.Zero; }
+            get { return !_timerEngine.IsRunning && TotalElapsed > TimeSpan.Zero; }
         }
 
         public string PlayPauseButtonLabel
@@ -228,7 +256,7 @@ namespace STStopwatch.ViewModels
         }
 
         public ICommand PlayPauseCommand { get; private set; }
-        public ICommand ResetCommand { get; private set; }
+        public ICommand CompleteSessionCommand { get; private set; }
         public ICommand NextSessionCommand { get; private set; }
         public ICommand ToggleMinimalModeCommand { get; private set; }
         public ICommand ToggleAlwaysOnTopCommand { get; private set; }
@@ -246,19 +274,51 @@ namespace STStopwatch.ViewModels
         private void UpdateTimerDisplay()
         {
             Elapsed = _timerEngine.Elapsed;
+            OnPropertyChanged("TotalElapsed");
 
             double targetSeconds = TargetDuration.TotalSeconds;
+            double totalSeconds = TotalElapsed.TotalSeconds;
+
             if (targetSeconds > 0)
             {
-                Progress = _elapsed.TotalSeconds / targetSeconds;
+                Progress = totalSeconds / targetSeconds;
             }
             else
             {
                 Progress = 0.0;
             }
 
-            // Check if target was reached for notification
-            if (IsRunning && !_targetNotificationFired && _elapsed >= TargetDuration && TargetDuration > TimeSpan.Zero)
+            // Calculate Target Finish Time (when the duration will end)
+            if (targetSeconds > 0)
+            {
+                if (!IsRunning && totalSeconds == 0 && _completedSegments.Count == 0)
+                {
+                    // Setting mode: finish time from now
+                    DateTime finishTime = DateTime.Now + TargetDuration;
+                    TargetFinishTimeText = finishTime.ToString("HH:mm:ss");
+                }
+                else
+                {
+                    // Active mode: finish time based on remaining time
+                    double remainingSeconds = Math.Max(0.0, targetSeconds - totalSeconds);
+                    DateTime finishTime = DateTime.Now.AddSeconds(remainingSeconds);
+                    if (remainingSeconds <= 0.5)
+                    {
+                        TargetFinishTimeText = "Goal Reached (" + DateTime.Now.ToString("HH:mm") + ")";
+                    }
+                    else
+                    {
+                        TargetFinishTimeText = finishTime.ToString("HH:mm:ss");
+                    }
+                }
+            }
+            else
+            {
+                TargetFinishTimeText = DateTime.Now.ToString("HH:mm:ss");
+            }
+
+            // Target reached alert
+            if (IsRunning && !_targetNotificationFired && totalSeconds >= targetSeconds && targetSeconds > 0)
             {
                 _targetNotificationFired = true;
                 try
@@ -269,8 +329,8 @@ namespace STStopwatch.ViewModels
                 {
                 }
                 _trayService.ShowNotification(
-                    "Target Reached",
-                    string.Format("{0} completed its target duration of {1}!", CurrentSessionLabel, FormattedTarget));
+                    "Target Duration Completed",
+                    string.Format("You reached the target duration of {0}!", FormattedTarget));
             }
         }
 
@@ -282,10 +342,9 @@ namespace STStopwatch.ViewModels
             }
             else
             {
-                if (_elapsed == TimeSpan.Zero)
+                if (_currentSessionElapsed == TimeSpan.Zero)
                 {
                     _sessionStartTime = DateTime.Now;
-                    _targetNotificationFired = false;
                 }
                 _timerEngine.Start();
             }
@@ -294,44 +353,101 @@ namespace STStopwatch.ViewModels
             NotifyStateChanged();
         }
 
-        private bool CanExecuteReset()
+        private bool CanExecuteCompleteSession()
         {
-            return _elapsed > TimeSpan.Zero || _timerEngine.IsRunning;
+            return TotalElapsed > TimeSpan.Zero || _timerEngine.IsRunning || _completedSegments.Count > 0;
         }
 
-        private void ExecuteReset()
+        private void ExecuteCompleteSession()
         {
+            // Completed / End Button (middle button)
+            _currentSessionElapsed = _timerEngine.Elapsed;
+            RecordCurrentSessionIfAny(true);
+
             _timerEngine.Reset();
+            _currentSessionElapsed = TimeSpan.Zero;
             _targetNotificationFired = false;
+            _blockCompletedElapsed = TimeSpan.Zero;
+            _completedSegments.Clear();
+
             UpdateTimerDisplay();
             NotifyStateChanged();
         }
 
         private void ExecuteNextSession()
         {
-            // Consistent policy: Record completed / accumulated session before advancing
-            RecordCurrentSessionIfAny();
+            _currentSessionElapsed = _timerEngine.Elapsed;
 
-            // Reset current stopwatch
+            // 1. Record completed session
+            RecordCurrentSessionIfAny(false);
+
+            // 2. Add slice of completed session to duration ring
+            double targetSec = TargetDuration.TotalSeconds;
+            if (targetSec > 0)
+            {
+                double startRatio = _blockCompletedElapsed.TotalSeconds / targetSec;
+                double endRatio = (_blockCompletedElapsed + _currentSessionElapsed).TotalSeconds / targetSec;
+
+                double startAngle = Math.Min(1.0, startRatio) * 360.0;
+                double endAngle = Math.Min(1.0, endRatio) * 360.0;
+
+                if (endAngle > startAngle)
+                {
+                    _completedSegments.Add(new RingSessionSegment(
+                        CurrentSessionNumber,
+                        startAngle,
+                        endAngle,
+                        CurrentSessionColor
+                    ));
+                }
+            }
+
+            _blockCompletedElapsed += _currentSessionElapsed;
+
+            // 3. Reset current session timer
             _timerEngine.Reset();
-            _targetNotificationFired = false;
-            UpdateTimerDisplay();
+            _currentSessionElapsed = TimeSpan.Zero;
+            _sessionStartTime = DateTime.Now;
 
-            // Advance session up to session 12, then loop to 1
+            // 4. Advance session index (01 -> 12, then loops to 01)
             _currentSessionIndex = (_currentSessionIndex + 1) % 12;
 
-            _sessionStartTime = DateTime.Now;
+            // 5. Update session label consistently
+            AdvanceSessionLabelText();
+
+            // 6. Pressing next also AUTOMATICALLY CONTINUES the stopwatch
+            _timerEngine.Start();
 
             OnPropertyChanged("CurrentSession");
             OnPropertyChanged("CurrentSessionNumber");
-            OnPropertyChanged("CurrentSessionLabel");
             OnPropertyChanged("CurrentSessionPillText");
             OnPropertyChanged("CurrentSessionColor");
-            OnPropertyChanged("TargetDuration");
-            OnPropertyChanged("FormattedTarget");
+            OnPropertyChanged("TotalElapsed");
+            OnPropertyChanged("CompletedSegments");
 
             SaveSettings();
+            UpdateTimerDisplay();
             NotifyStateChanged();
+        }
+
+        private void AdvanceSessionLabelText()
+        {
+            if (string.IsNullOrEmpty(_sessionLabelText))
+            {
+                SessionLabelText = string.Format("Session {0:D2}", CurrentSessionNumber);
+                return;
+            }
+
+            // Check if text ends with digits
+            var match = Regex.Match(_sessionLabelText, @"^(.*?)(\d+)$");
+            if (match.Success)
+            {
+                string prefix = match.Groups[1].Value;
+                int digitsCount = match.Groups[2].Value.Length;
+                string newNumberStr = CurrentSessionNumber.ToString("D" + digitsCount);
+                SessionLabelText = prefix + newNumberStr;
+            }
+            // If user typed a custom label without numbers, preserve it as is!
         }
 
         private void ExecuteSelectSession(object param)
@@ -343,40 +459,39 @@ namespace STStopwatch.ViewModels
                 {
                     if (sessionNum - 1 != _currentSessionIndex)
                     {
-                        RecordCurrentSessionIfAny();
+                        RecordCurrentSessionIfAny(false);
                         _timerEngine.Reset();
-                        _targetNotificationFired = false;
                         _currentSessionIndex = sessionNum - 1;
                         _sessionStartTime = DateTime.Now;
 
+                        AdvanceSessionLabelText();
+
                         OnPropertyChanged("CurrentSession");
                         OnPropertyChanged("CurrentSessionNumber");
-                        OnPropertyChanged("CurrentSessionLabel");
                         OnPropertyChanged("CurrentSessionPillText");
                         OnPropertyChanged("CurrentSessionColor");
-                        OnPropertyChanged("TargetDuration");
-                        OnPropertyChanged("FormattedTarget");
 
                         SaveSettings();
+                        UpdateTimerDisplay();
                         NotifyStateChanged();
                     }
                 }
             }
         }
 
-        private void RecordCurrentSessionIfAny()
+        private void RecordCurrentSessionIfAny(bool isCompleted)
         {
             TimeSpan currentElapsed = _timerEngine.Elapsed;
             if (currentElapsed > TimeSpan.Zero)
             {
                 var record = new SessionRecord();
                 record.SessionNumber = CurrentSessionNumber;
-                record.SessionLabel = CurrentSessionLabel;
+                record.SessionLabel = SessionLabelText;
                 record.StartTime = _sessionStartTime;
                 record.EndTime = DateTime.Now;
                 record.TargetDurationSeconds = TargetDuration.TotalSeconds;
                 record.ElapsedSeconds = currentElapsed.TotalSeconds;
-                record.IsCompleted = currentElapsed >= TargetDuration;
+                record.IsCompleted = isCompleted || (TotalElapsed >= TargetDuration);
                 record.ThemeColorHex = CurrentSession.ThemeColorHex;
 
                 _storageService.SaveRecord(record);
@@ -401,7 +516,7 @@ namespace STStopwatch.ViewModels
 
         private void ExecuteClose()
         {
-            RecordCurrentSessionIfAny();
+            RecordCurrentSessionIfAny(false);
             SaveSettings();
             if (RequestClose != null)
             {
@@ -423,13 +538,8 @@ namespace STStopwatch.ViewModels
             settings.CurrentSessionNumber = CurrentSessionNumber;
             settings.IsAlwaysOnTop = IsAlwaysOnTop;
             settings.IsMinimalMode = IsMinimalMode;
-
-            var targets = new double[12];
-            for (int i = 0; i < 12; i++)
-            {
-                targets[i] = _sessions[i].TargetDuration.TotalSeconds;
-            }
-            settings.SessionTargetsInSeconds = targets;
+            settings.GlobalTargetDurationSeconds = TargetDuration.TotalSeconds;
+            settings.CustomSessionLabelTemplate = _sessionLabelText;
 
             _storageService.SaveSettings(settings);
         }

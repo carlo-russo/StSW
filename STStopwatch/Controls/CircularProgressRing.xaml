@@ -8,43 +8,45 @@
              SizeChanged="OnControlSizeChanged"
              MouseWheel="OnControlMouseWheel">
     <Grid x:Name="LayoutRoot" Background="Transparent">
-        <!-- Canvas for dynamic geometry paths -->
+        <!-- Canvas for dynamic ring geometry -->
         <Canvas x:Name="RingCanvas" Width="280" Height="280" HorizontalAlignment="Center" VerticalAlignment="Center">
-            <!-- Background Ring Track -->
+            <!-- Background Full Track -->
             <Path x:Name="TrackPath"
                   Stroke="#E2E8F0"
                   StrokeThickness="10"
                   StrokeStartLineCap="Round"
                   StrokeEndLineCap="Round" />
 
-            <!-- Active Elapsed Progress Arc -->
+            <!-- Target Guide Arc (Setting mode on 16h dial) -->
+            <Path x:Name="TargetGuidePath"
+                  Stroke="#94A3B8"
+                  StrokeThickness="2"
+                  StrokeDashArray="2 3"
+                  Opacity="0.5" />
+
+            <!-- Completed Session Slices Canvas (Sessions of this Duration) -->
+            <Canvas x:Name="CompletedSegmentsCanvas" Width="280" Height="280"/>
+
+            <!-- Current Active Session Progress Arc -->
             <Path x:Name="ProgressArcPath"
                   Stroke="#0052FF"
                   StrokeThickness="10"
                   StrokeStartLineCap="Round"
                   StrokeEndLineCap="Round" />
 
-            <!-- Target Indicator Arc (Subtle dash / guide line to target) -->
-            <Path x:Name="TargetGuidePath"
-                  Stroke="#94A3B8"
-                  StrokeThickness="2"
-                  StrokeDashArray="2 3"
-                  Opacity="0.6" />
-
-            <!-- Draggable Circular Target Adjustment Node -->
+            <!-- Circular Target Adjustment & Progress Node -->
             <Grid x:Name="AdjustmentThumb"
-                  Width="24" Height="24"
-                  Cursor="Hand"
+                  Width="22" Height="22"
                   MouseDown="OnThumbMouseDown"
                   MouseMove="OnThumbMouseMove"
                   MouseUp="OnThumbMouseUp"
-                  Canvas.Left="128" Canvas.Top="8">
-                <!-- Outer Node Glow / Ring -->
+                  Canvas.Left="129" Canvas.Top="9">
+                <!-- Outer Node Ring with crisp black border -->
                 <Ellipse Fill="#FFFFFF"
                          Stroke="#111111"
                          StrokeThickness="2">
                     <Ellipse.Effect>
-                        <DropShadowEffect BlurRadius="4" ShadowDepth="1" Opacity="0.3" Color="#000000"/>
+                        <DropShadowEffect BlurRadius="4" ShadowDepth="1" Opacity="0.25" Color="#000000"/>
                     </Ellipse.Effect>
                 </Ellipse>
                 <!-- Inner Color Core matching current session -->
@@ -54,7 +56,7 @@
                          HorizontalAlignment="Center" VerticalAlignment="Center" />
             </Grid>
 
-            <!-- Floating Target Tooltip / Badge during drag or hover -->
+            <!-- Floating Target Tooltip / Badge during drag -->
             <Border x:Name="TargetBubble"
                     Canvas.Left="90" Canvas.Top="-28"
                     Background="#111111"
@@ -72,18 +74,41 @@
 
         <!-- Center Content: Inside the circle -->
         <StackPanel HorizontalAlignment="Center"
-                    VerticalAlignment="Center"
-                    IsHitTestVisible="False">
-            <!-- Session Label: Bold Italic Serif (StartToday branding) -->
-            <TextBlock x:Name="SessionLabelText"
-                       Text="Session 01"
-                       FontFamily="Georgia"
-                       FontWeight="Bold"
-                       FontStyle="Italic"
-                       FontSize="16"
-                       Foreground="#64748B"
-                       HorizontalAlignment="Center"
-                       Margin="0,0,0,4" />
+                    VerticalAlignment="Center">
+
+            <!-- Editable Session Label: Bold Italic Serif (Click to Edit) -->
+            <TextBox x:Name="SessionLabelBox"
+                     Text="{Binding SessionLabel, RelativeSource={RelativeSource AncestorType=UserControl}, UpdateSourceTrigger=PropertyChanged}"
+                     FontFamily="Georgia"
+                     FontWeight="Bold"
+                     FontStyle="Italic"
+                     FontSize="17"
+                     Foreground="#475569"
+                     Background="Transparent"
+                     BorderThickness="0"
+                     TextAlignment="Center"
+                     HorizontalAlignment="Center"
+                     MinWidth="150"
+                     Cursor="IBeam"
+                     ToolTip="Click to edit session name"
+                     Margin="0,0,0,4">
+                <TextBox.Style>
+                    <Style TargetType="TextBox">
+                        <Setter Property="CaretBrush" Value="#0052FF"/>
+                        <Setter Property="SelectionBrush" Value="#0052FF"/>
+                        <Style.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter Property="Foreground" Value="#111111"/>
+                            </Trigger>
+                            <Trigger Property="IsKeyboardFocused" Value="True">
+                                <Setter Property="Foreground" Value="#111111"/>
+                                <Setter Property="BorderThickness" Value="0,0,0,1.5"/>
+                                <Setter Property="BorderBrush" Value="#0052FF"/>
+                            </Trigger>
+                        </Style.Triggers>
+                    </Style>
+                </TextBox.Style>
+            </TextBox>
 
             <!-- Elapsed Time Display: Large Geometric Sans-Serif Tabular Numbers -->
             <TextBlock x:Name="ElapsedDisplay"
@@ -92,20 +117,22 @@
                        FontWeight="Bold"
                        FontSize="40"
                        Foreground="#111111"
-                       HorizontalAlignment="Center" />
+                       HorizontalAlignment="Center"
+                       IsHitTestVisible="False" />
 
-            <!-- Target Duration Readout below timer -->
-            <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,4,0,0">
-                <TextBlock Text="target "
+            <!-- Target Finish Time Readout: Clock time when duration will end -->
+            <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,4,0,0" IsHitTestVisible="False">
+                <TextBlock x:Name="FinishLabel"
+                           Text="target finish "
                            FontFamily="Segoe UI"
                            FontSize="12"
                            Foreground="#94A3B8"/>
-                <TextBlock x:Name="TargetDisplay"
-                           Text="01:00:00"
+                <TextBlock x:Name="FinishDisplay"
+                           Text="{Binding TargetFinishTime, RelativeSource={RelativeSource AncestorType=UserControl}}"
                            FontFamily="Segoe UI"
                            FontWeight="SemiBold"
                            FontSize="12"
-                           Foreground="#64748B"/>
+                           Foreground="#475569"/>
             </StackPanel>
         </StackPanel>
     </Grid>

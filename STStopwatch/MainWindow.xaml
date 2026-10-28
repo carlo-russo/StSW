@@ -35,7 +35,7 @@
                     <RowDefinition Height="Auto"/>
                     <!-- Stopwatch Circular Interface -->
                     <RowDefinition Height="*"/>
-                    <!-- 3 Essential Playback Controls -->
+                    <!-- 3 Essential Playback Controls (Icons Only) -->
                     <RowDefinition Height="Auto"/>
                 </Grid.RowDefinitions>
 
@@ -216,76 +216,104 @@
                         </StackPanel>
                     </Border>
 
-                    <!-- Large Circular Progress Ring with Drag Thumb & Timer Inside -->
+                    <!-- Large Circular Progress Ring with Editable Session Label, Slices, and Target Finish Time -->
                     <controls:CircularProgressRing Grid.Row="1"
                                                    Progress="{Binding Progress}"
                                                    Elapsed="{Binding Elapsed}"
+                                                   TotalElapsed="{Binding TotalElapsed}"
                                                    TargetDuration="{Binding TargetDuration, Mode=TwoWay}"
-                                                   SessionLabel="{Binding CurrentSessionLabel}"
+                                                   TargetFinishTime="{Binding TargetFinishTimeText}"
+                                                   SessionLabel="{Binding SessionLabelText, Mode=TwoWay}"
                                                    RingBrush="{Binding CurrentSessionColor}"
+                                                   CompletedSegments="{Binding CompletedSegments}"
+                                                   IsRunning="{Binding IsRunning}"
                                                    IsMinimalMode="{Binding IsMinimalMode}"/>
                 </Grid>
 
-                <!-- 3 CONTROLS (Row 2): Start/Pause/Resume, Reset, Next Session -->
+                <!-- 3 CONTROLS (Row 2): Start/Pause on Left, Completed/End in Middle, Next on Right -->
                 <Border Grid.Row="2"
                         Background="#FFFFFF"
                         BorderBrush="#111111"
                         BorderThickness="0,1,0,0"
                         Padding="16,12">
-                    <Grid>
+                    <Grid HorizontalAlignment="Center">
                         <Grid.ColumnDefinitions>
-                            <!-- Reset Button -->
-                            <ColumnDefinition Width="80"/>
-                            <ColumnDefinition Width="10"/>
-                            <!-- Start / Pause / Resume Button -->
-                            <ColumnDefinition Width="*"/>
-                            <ColumnDefinition Width="10"/>
-                            <!-- Next Session Button -->
-                            <ColumnDefinition Width="100"/>
+                            <!-- 1. Start / Pause / Resume (Left) -->
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="14"/>
+                            <!-- 2. Completed / End (Middle) -->
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="14"/>
+                            <!-- 3. Next Session (Right) -->
+                            <ColumnDefinition Width="Auto"/>
                         </Grid.ColumnDefinitions>
 
-                        <!-- 1. Reset Button -->
+                        <!-- 1. Start / Pause / Resume Button (Left) -->
                         <Button Grid.Column="0"
-                                Command="{Binding ResetCommand}"
-                                Style="{StaticResource OutlineActionButtonStyle}"
-                                ToolTip="Reset current session elapsed time">
-                            <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
-                                <TextBlock Text="↺" FontSize="13" Margin="0,-1,4,0"/>
-                                <TextBlock Text="Reset"/>
-                            </StackPanel>
-                        </Button>
-
-                        <!-- 2. Start / Pause / Resume Button -->
-                        <Button Grid.Column="2"
                                 Command="{Binding PlayPauseCommand}"
                                 Style="{StaticResource PrimaryActionButtonStyle}"
-                                ToolTip="Start, Pause, or Resume stopwatch">
-                            <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
-                                <TextBlock Text="▶ " FontSize="12" VerticalAlignment="Center">
-                                    <TextBlock.Style>
-                                        <Style TargetType="TextBlock">
-                                            <Setter Property="Text" Value="▶ "/>
-                                            <Style.Triggers>
-                                                <DataTrigger Binding="{Binding IsRunning}" Value="True">
-                                                    <Setter Property="Text" Value="❚❚ "/>
-                                                </DataTrigger>
-                                            </Style.Triggers>
-                                        </Style>
-                                    </TextBlock.Style>
-                                </TextBlock>
-                                <TextBlock Text="{Binding PlayPauseButtonLabel}" VerticalAlignment="Center"/>
-                            </StackPanel>
+                                Width="68" Height="46"
+                                ToolTip="{Binding PlayPauseButtonLabel}">
+                            <Grid HorizontalAlignment="Center" VerticalAlignment="Center">
+                                <!-- Play Triangle Icon (Visible when stopped / paused) -->
+                                <Path Data="M 0 0 L 14 8 L 0 16 Z"
+                                      Fill="#FFFFFF"
+                                      Width="14" Height="16"
+                                      Stretch="Uniform"
+                                      HorizontalAlignment="Center"
+                                      VerticalAlignment="Center"
+                                      Margin="3,0,0,0"
+                                      Visibility="{Binding IsRunning, Converter={StaticResource InverseBoolToVisibilityConverter}}"/>
+
+                                <!-- Pause Two Bars Icon (Visible when running) -->
+                                <Grid Width="13" Height="15"
+                                      HorizontalAlignment="Center"
+                                      VerticalAlignment="Center"
+                                      Visibility="{Binding IsRunning, Converter={StaticResource BoolToVisibilityConverter}}">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="4.5"/>
+                                        <ColumnDefinition Width="4"/>
+                                        <ColumnDefinition Width="4.5"/>
+                                    </Grid.ColumnDefinitions>
+                                    <Rectangle Grid.Column="0" Fill="#FFFFFF" RadiusX="1" RadiusY="1"/>
+                                    <Rectangle Grid.Column="2" Fill="#FFFFFF" RadiusX="1" RadiusY="1"/>
+                                </Grid>
+                            </Grid>
                         </Button>
 
-                        <!-- 3. Next Session Button -->
+                        <!-- 2. Completed / End Button (Middle) -->
+                        <Button Grid.Column="2"
+                                Command="{Binding CompleteSessionCommand}"
+                                Style="{StaticResource OutlineActionButtonStyle}"
+                                Width="88" Height="46"
+                                ToolTip="Complete / End Session Block">
+                            <Path Data="M 3 8.5 L 7 12.5 L 16 3.5"
+                                  Stroke="#111111"
+                                  StrokeThickness="2.5"
+                                  StrokeStartLineCap="Round"
+                                  StrokeEndLineCap="Round"
+                                  StrokeLineJoin="Round"
+                                  Width="18" Height="15"
+                                  Stretch="Uniform"
+                                  HorizontalAlignment="Center"
+                                  VerticalAlignment="Center"/>
+                        </Button>
+
+                        <!-- 3. Next Session Button (Right) -->
                         <Button Grid.Column="4"
                                 Command="{Binding NextSessionCommand}"
                                 Style="{StaticResource SecondaryActionButtonStyle}"
-                                ToolTip="Save current session and advance to next">
-                            <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
-                                <TextBlock Text="Next" Margin="0,0,4,0"/>
-                                <TextBlock Text="⏭" FontSize="11" VerticalAlignment="Center"/>
-                            </StackPanel>
+                                Width="68" Height="46"
+                                ToolTip="Next Session (Continues automatically)">
+                            <Grid Width="15" Height="15" HorizontalAlignment="Center" VerticalAlignment="Center">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="10"/>
+                                    <ColumnDefinition Width="2"/>
+                                    <ColumnDefinition Width="3"/>
+                                </Grid.ColumnDefinitions>
+                                <Path Grid.Column="0" Data="M 0 0 L 10 7.5 L 0 15 Z" Fill="#111111" Stretch="Fill"/>
+                                <Rectangle Grid.Column="2" Fill="#111111" RadiusX="1" RadiusY="1"/>
+                            </Grid>
                         </Button>
                     </Grid>
                 </Border>

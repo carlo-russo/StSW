@@ -9,8 +9,6 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
-using STStopwatch.Controls;
-using STStopwatch.Views;
 using System;
 using System.Diagnostics;
 using System.Windows;

@@ -1,0 +1,164 @@
+<UserControl x:Class="STStopwatch.Views.DayViewControl"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             mc:Ignorable="d" 
+             d:DesignHeight="400" d:DesignWidth="380">
+    <Grid Background="#FFFFFF">
+        <Grid.RowDefinitions>
+            <!-- Navigation Header -->
+            <RowDefinition Height="Auto"/>
+            <!-- Totals Metrics Cards -->
+            <RowDefinition Height="Auto"/>
+            <!-- Table Header -->
+            <RowDefinition Height="Auto"/>
+            <!-- Session Records List -->
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+
+        <!-- Navigation Bar -->
+        <Border Grid.Row="0" Background="#F0F4F8" BorderBrush="#111111" BorderThickness="1" CornerRadius="6" Margin="12,8,12,8" Padding="6,4">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+
+                <Button Grid.Column="0" Command="{Binding PreviousDayCommand}"
+                        Background="Transparent" BorderThickness="0" Padding="8,4" Cursor="Hand" ToolTip="Previous Day">
+                    <TextBlock Text="◀" FontSize="12" Foreground="#111111"/>
+                </Button>
+
+                <TextBlock Grid.Column="1" Text="{Binding DaySummary.FormattedDate}"
+                           FontFamily="Georgia" FontWeight="Bold" FontStyle="Italic" FontSize="13"
+                           Foreground="#111111" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+
+                <Button Grid.Column="2" Command="{Binding NextDayCommand}"
+                        Background="Transparent" BorderThickness="0" Padding="8,4" Cursor="Hand" ToolTip="Next Day">
+                    <TextBlock Text="▶" FontSize="12" Foreground="#111111"/>
+                </Button>
+
+                <Button Grid.Column="3" Command="{Binding TodayCommand}"
+                        Style="{StaticResource SmallPillButtonStyle}"
+                        Margin="4,0,0,0">
+                    <TextBlock Text="Today" FontFamily="Segoe UI" FontWeight="SemiBold" FontSize="11" Foreground="#111111"/>
+                </Button>
+            </Grid>
+        </Border>
+
+        <!-- Daily Totals Cards -->
+        <Grid Grid.Row="1" Margin="12,0,12,10">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="8"/>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="8"/>
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
+
+            <!-- Total Time Card -->
+            <Border Grid.Column="0" Background="#F0F4F8" BorderBrush="#111111" BorderThickness="1" CornerRadius="6" Padding="8,6">
+                <StackPanel>
+                    <TextBlock Text="TOTAL TIME" FontFamily="Segoe UI" FontSize="9" FontWeight="Bold" Foreground="#64748B"/>
+                    <TextBlock Text="{Binding DaySummary.FormattedTotalDuration}" FontFamily="Segoe UI" FontWeight="Bold" FontSize="13" Foreground="#0052FF" Margin="0,2,0,0"/>
+                </StackPanel>
+            </Border>
+
+            <!-- Sessions Card -->
+            <Border Grid.Column="2" Background="#F0F4F8" BorderBrush="#111111" BorderThickness="1" CornerRadius="6" Padding="8,6">
+                <StackPanel>
+                    <TextBlock Text="SESSIONS" FontFamily="Segoe UI" FontSize="9" FontWeight="Bold" Foreground="#64748B"/>
+                    <TextBlock Text="{Binding DaySummary.TotalSessions}" FontFamily="Segoe UI" FontWeight="Bold" FontSize="13" Foreground="#111111" Margin="0,2,0,0"/>
+                </StackPanel>
+            </Border>
+
+            <!-- Avg Duration Card -->
+            <Border Grid.Column="4" Background="#F0F4F8" BorderBrush="#111111" BorderThickness="1" CornerRadius="6" Padding="8,6">
+                <StackPanel>
+                    <TextBlock Text="AVG DURATION" FontFamily="Segoe UI" FontSize="9" FontWeight="Bold" Foreground="#64748B"/>
+                    <TextBlock Text="{Binding DaySummary.FormattedAverageDuration}" FontFamily="Segoe UI" FontWeight="Bold" FontSize="13" Foreground="#111111" Margin="0,2,0,0"/>
+                </StackPanel>
+            </Border>
+        </Grid>
+
+        <!-- Table Columns Header -->
+        <Border Grid.Row="2" Background="#F8FAFC" BorderBrush="#E2E8F0" BorderThickness="0,1,0,1" Margin="12,0,12,4" Padding="6,4">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="70"/>
+                    <ColumnDefinition Width="80"/>
+                    <ColumnDefinition Width="65"/>
+                    <ColumnDefinition Width="65"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+                <TextBlock Grid.Column="0" Text="SESSION" FontFamily="Segoe UI" FontSize="10" FontWeight="Bold" Foreground="#64748B"/>
+                <TextBlock Grid.Column="1" Text="TIME" FontFamily="Segoe UI" FontSize="10" FontWeight="Bold" Foreground="#64748B"/>
+                <TextBlock Grid.Column="2" Text="TARGET" FontFamily="Segoe UI" FontSize="10" FontWeight="Bold" Foreground="#64748B"/>
+                <TextBlock Grid.Column="3" Text="ELAPSED" FontFamily="Segoe UI" FontSize="10" FontWeight="Bold" Foreground="#64748B"/>
+                <TextBlock Grid.Column="4" Text="STATUS" FontFamily="Segoe UI" FontSize="10" FontWeight="Bold" Foreground="#64748B" HorizontalAlignment="Right"/>
+            </Grid>
+        </Border>
+
+        <!-- Records List or Empty State -->
+        <ScrollViewer Grid.Row="3" Margin="12,0,12,8" VerticalScrollBarVisibility="Auto">
+            <StackPanel>
+                <!-- Items Control for Day Records -->
+                <ItemsControl ItemsSource="{Binding DaySummary.Records}">
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate>
+                            <Border BorderBrush="#E2E8F0" BorderThickness="0,0,0,1" Padding="4,6">
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="70"/>
+                                        <ColumnDefinition Width="80"/>
+                                        <ColumnDefinition Width="65"/>
+                                        <ColumnDefinition Width="65"/>
+                                        <ColumnDefinition Width="*"/>
+                                    </Grid.ColumnDefinitions>
+
+                                    <!-- Session Badge -->
+                                    <Border Grid.Column="0" Background="#F0F4F8" BorderBrush="#111111" BorderThickness="1" CornerRadius="4" Padding="4,1" HorizontalAlignment="Left">
+                                        <TextBlock Text="{Binding SessionLabel}" FontFamily="Segoe UI" FontWeight="Bold" FontSize="10" Foreground="#111111"/>
+                                    </Border>
+
+                                    <!-- Time Range -->
+                                    <TextBlock Grid.Column="1" Text="{Binding FormattedTimeRange}" FontFamily="Segoe UI" FontSize="11" Foreground="#475569" VerticalAlignment="Center"/>
+
+                                    <!-- Target -->
+                                    <TextBlock Grid.Column="2" Text="{Binding FormattedTarget}" FontFamily="Segoe UI" FontSize="11" Foreground="#64748B" VerticalAlignment="Center"/>
+
+                                    <!-- Elapsed -->
+                                    <TextBlock Grid.Column="3" Text="{Binding FormattedElapsed}" FontFamily="Segoe UI" FontWeight="SemiBold" FontSize="11" Foreground="#111111" VerticalAlignment="Center"/>
+
+                                    <!-- Status Badge -->
+                                    <Border Grid.Column="4" Background="#F0F4F8" BorderBrush="#111111" BorderThickness="1" CornerRadius="3" Padding="4,1" HorizontalAlignment="Right" VerticalAlignment="Center">
+                                        <TextBlock Text="{Binding CompletionStatusText}" FontFamily="Segoe UI" FontSize="9" FontWeight="SemiBold" Foreground="#0052FF"/>
+                                    </Border>
+                                </Grid>
+                            </Border>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+
+                <!-- Empty State Message -->
+                <TextBlock Text="No sessions recorded for this day."
+                           FontFamily="Segoe UI" FontStyle="Italic" FontSize="12" Foreground="#94A3B8"
+                           HorizontalAlignment="Center" Margin="0,30,0,0">
+                    <TextBlock.Style>
+                        <Style TargetType="TextBlock">
+                            <Setter Property="Visibility" Value="Collapsed"/>
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding DaySummary.Records.Count}" Value="0">
+                                    <Setter Property="Visibility" Value="Visible"/>
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </TextBlock.Style>
+                </TextBlock>
+            </StackPanel>
+        </ScrollViewer>
+    </Grid>
+</UserControl>

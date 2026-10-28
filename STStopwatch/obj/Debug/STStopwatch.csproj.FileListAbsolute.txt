@@ -1,0 +1,9 @@
+C:\Users\sekoz\StartToday\STStopwatch\obj\Debug\STStopwatch.csprojResolveAssemblyReference.cache
+C:\Users\sekoz\StartToday\STStopwatch\obj\Debug\Controls\CircularProgressRing.baml
+C:\Users\sekoz\StartToday\STStopwatch\obj\Debug\App.baml
+C:\Users\sekoz\StartToday\STStopwatch\obj\Debug\Controls\CircularProgressRing.g.cs
+C:\Users\sekoz\StartToday\STStopwatch\obj\Debug\App.g.cs
+C:\Users\sekoz\StartToday\STStopwatch\obj\Debug\STStopwatch_Content.g.cs
+C:\Users\sekoz\StartToday\STStopwatch\obj\Debug\GeneratedInternalTypeHelper.g.cs
+C:\Users\sekoz\StartToday\STStopwatch\obj\Debug\STStopwatch_MarkupCompile.cache
+C:\Users\sekoz\StartToday\STStopwatch\obj\Debug\STStopwatch_MarkupCompile.lref

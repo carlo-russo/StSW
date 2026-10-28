@@ -1,0 +1,112 @@
+<UserControl x:Class="STStopwatch.Controls.CircularProgressRing"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             mc:Ignorable="d" 
+             d:DesignHeight="300" d:DesignWidth="300"
+             SizeChanged="OnControlSizeChanged"
+             MouseWheel="OnControlMouseWheel">
+    <Grid x:Name="LayoutRoot" Background="Transparent">
+        <!-- Canvas for dynamic geometry paths -->
+        <Canvas x:Name="RingCanvas" Width="280" Height="280" HorizontalAlignment="Center" VerticalAlignment="Center">
+            <!-- Background Ring Track -->
+            <Path x:Name="TrackPath"
+                  Stroke="#E2E8F0"
+                  StrokeThickness="10"
+                  StrokeStartLineCap="Round"
+                  StrokeEndLineCap="Round" />
+
+            <!-- Active Elapsed Progress Arc -->
+            <Path x:Name="ProgressArcPath"
+                  Stroke="#0052FF"
+                  StrokeThickness="10"
+                  StrokeStartLineCap="Round"
+                  StrokeEndLineCap="Round" />
+
+            <!-- Target Indicator Arc (Subtle dash / guide line to target) -->
+            <Path x:Name="TargetGuidePath"
+                  Stroke="#94A3B8"
+                  StrokeThickness="2"
+                  StrokeDashArray="2 3"
+                  Opacity="0.6" />
+
+            <!-- Draggable Circular Target Adjustment Node -->
+            <Grid x:Name="AdjustmentThumb"
+                  Width="24" Height="24"
+                  Cursor="Hand"
+                  MouseDown="OnThumbMouseDown"
+                  MouseMove="OnThumbMouseMove"
+                  MouseUp="OnThumbMouseUp"
+                  Canvas.Left="128" Canvas.Top="8">
+                <!-- Outer Node Glow / Ring -->
+                <Ellipse Fill="#FFFFFF"
+                         Stroke="#111111"
+                         StrokeThickness="2">
+                    <Ellipse.Effect>
+                        <DropShadowEffect BlurRadius="4" ShadowDepth="1" Opacity="0.3" Color="#000000"/>
+                    </Ellipse.Effect>
+                </Ellipse>
+                <!-- Inner Color Core matching current session -->
+                <Ellipse x:Name="ThumbInnerCore"
+                         Width="10" Height="10"
+                         Fill="#0052FF"
+                         HorizontalAlignment="Center" VerticalAlignment="Center" />
+            </Grid>
+
+            <!-- Floating Target Tooltip / Badge during drag or hover -->
+            <Border x:Name="TargetBubble"
+                    Canvas.Left="90" Canvas.Top="-28"
+                    Background="#111111"
+                    CornerRadius="10"
+                    Padding="8,3"
+                    Visibility="Collapsed">
+                <TextBlock x:Name="TargetBubbleText"
+                           Text="Target: 01h 00m"
+                           Foreground="#FFFFFF"
+                           FontSize="11"
+                           FontFamily="Segoe UI"
+                           FontWeight="SemiBold"/>
+            </Border>
+        </Canvas>
+
+        <!-- Center Content: Inside the circle -->
+        <StackPanel HorizontalAlignment="Center"
+                    VerticalAlignment="Center"
+                    IsHitTestVisible="False">
+            <!-- Session Label: Bold Italic Serif (StartToday branding) -->
+            <TextBlock x:Name="SessionLabelText"
+                       Text="Session 01"
+                       FontFamily="Georgia"
+                       FontWeight="Bold"
+                       FontStyle="Italic"
+                       FontSize="16"
+                       Foreground="#64748B"
+                       HorizontalAlignment="Center"
+                       Margin="0,0,0,4" />
+
+            <!-- Elapsed Time Display: Large Geometric Sans-Serif Tabular Numbers -->
+            <TextBlock x:Name="ElapsedDisplay"
+                       Text="00:00:00"
+                       FontFamily="Segoe UI"
+                       FontWeight="Bold"
+                       FontSize="40"
+                       Foreground="#111111"
+                       HorizontalAlignment="Center" />
+
+            <!-- Target Duration Readout below timer -->
+            <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,4,0,0">
+                <TextBlock Text="target "
+                           FontFamily="Segoe UI"
+                           FontSize="12"
+                           Foreground="#94A3B8"/>
+                <TextBlock x:Name="TargetDisplay"
+                           Text="01:00:00"
+                           FontFamily="Segoe UI"
+                           FontWeight="SemiBold"
+                           FontSize="12"
+                           Foreground="#64748B"/>
+            </StackPanel>
+        </StackPanel>
+    </Grid>
+</UserControl>

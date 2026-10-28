@@ -169,7 +169,7 @@ namespace STStopwatch.ViewModels
 
         public bool IsPaused
         {
-            get { return !_timerEngine.IsRunning && _elapsed > TimeSpan.Zero; }
+            get { return !_timerEngine.IsRunning && _timerEngine.Elapsed > TimeSpan.Zero; }
         }
 
         public string PlayPauseButtonLabel
@@ -290,6 +290,7 @@ namespace STStopwatch.ViewModels
                 _timerEngine.Start();
             }
 
+            UpdateTimerDisplay();
             NotifyStateChanged();
         }
 
@@ -366,7 +367,7 @@ namespace STStopwatch.ViewModels
         private void RecordCurrentSessionIfAny()
         {
             TimeSpan currentElapsed = _timerEngine.Elapsed;
-            if (currentElapsed.TotalSeconds >= 1.0)
+            if (currentElapsed > TimeSpan.Zero)
             {
                 var record = new SessionRecord();
                 record.SessionNumber = CurrentSessionNumber;

@@ -10,6 +10,25 @@
     <Grid x:Name="LayoutRoot" Background="Transparent">
         <!-- Canvas for dynamic ring geometry -->
         <Canvas x:Name="RingCanvas" Width="280" Height="280" HorizontalAlignment="Center" VerticalAlignment="Center">
+            <!-- Background solid white card for Super Minimized mode -->
+            <Ellipse x:Name="SuperMiniBackgroundEllipse"
+                     Fill="#FFFFFF"
+                     Stroke="#111111"
+                     StrokeThickness="1.5"
+                     Visibility="Collapsed" />
+
+            <!-- Edge Ambient Glow for Super Minimized mode -->
+            <Ellipse x:Name="EdgeGlowEllipse"
+                     Fill="Transparent"
+                     Stroke="#0052FF"
+                     StrokeThickness="2"
+                     Opacity="0.6"
+                     Visibility="Collapsed">
+                <Ellipse.Effect>
+                    <DropShadowEffect x:Name="EdgeGlowEffect" BlurRadius="14" ShadowDepth="0" Color="#0052FF" Opacity="0.85"/>
+                </Ellipse.Effect>
+            </Ellipse>
+
             <!-- Background Full Track -->
             <Path x:Name="TrackPath"
                   Stroke="#E2E8F0"
@@ -76,6 +95,28 @@
         <StackPanel HorizontalAlignment="Center"
                     VerticalAlignment="Center">
 
+            <!-- ST Emblem Logo Badge: Moves above the text in Super Minimized View -->
+            <Border x:Name="SuperMiniLogoBadge"
+                    Width="20" Height="20"
+                    Background="#0052FF"
+                    BorderBrush="#111111"
+                    BorderThickness="1"
+                    CornerRadius="4"
+                    HorizontalAlignment="Center"
+                    Margin="0,0,0,3"
+                    Visibility="Collapsed"
+                    IsHitTestVisible="False">
+                <TextBlock Text="ST"
+                           FontFamily="Georgia"
+                           FontWeight="Bold"
+                           FontStyle="Italic"
+                           FontSize="10"
+                           Foreground="#FFFFFF"
+                           HorizontalAlignment="Center"
+                           VerticalAlignment="Center"
+                           Margin="0,1,0,0"/>
+            </Border>
+
             <!-- Editable Session Label: Bold Italic Serif (Click to Edit) -->
             <TextBox x:Name="SessionLabelBox"
                      Text="{Binding SessionLabel, RelativeSource={RelativeSource AncestorType=UserControl}, UpdateSourceTrigger=PropertyChanged}"
@@ -121,7 +162,7 @@
                        IsHitTestVisible="False" />
 
             <!-- Target Finish Time Readout: Clock time when duration will end -->
-            <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,4,0,0" IsHitTestVisible="False">
+            <StackPanel x:Name="FinishTimePanel" Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,4,0,0" IsHitTestVisible="False">
                 <TextBlock x:Name="FinishLabel"
                            Text="target finish "
                            FontFamily="Segoe UI"

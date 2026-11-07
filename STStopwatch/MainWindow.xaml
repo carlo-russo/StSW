@@ -9,10 +9,13 @@
         AllowsTransparency="True"
         Background="Transparent"
         Topmost="{Binding IsAlwaysOnTop}"
+        ResizeMode="CanMinimize"
         Width="380" Height="530"
-        MinWidth="280" MinHeight="360"
+        MinWidth="180" MinHeight="180"
         WindowStartupLocation="CenterScreen"
         MouseLeftButtonDown="OnWindowMouseLeftButtonDown"
+        PreviewMouseRightButtonDown="OnWindowPreviewMouseRightButtonDown"
+        StateChanged="OnWindowStateChanged"
         Closing="OnWindowClosing"
         Loaded="OnWindowLoaded">
 
@@ -23,6 +26,28 @@
             BorderThickness="1.5"
             CornerRadius="10"
             Margin="10">
+        <Border.ContextMenu>
+            <ContextMenu>
+                <MenuItem Header="Auto-Find Free Screen Region"
+                          IsCheckable="True"
+                          IsChecked="{Binding IsAutoFreeAreaEnabled, Mode=TwoWay}"
+                          ToolTip="Automatically moves super minimized circle to the most free, uncluttered area"/>
+                <Separator/>
+                <MenuItem Header="Exit Super Minimized (Shift+Click)"
+                          Command="{Binding ToggleSuperMinimalModeCommand}"
+                          Visibility="{Binding IsSuperMinimalMode, Converter={StaticResource BoolToVisibilityConverter}}"/>
+                <MenuItem Header="Super Minimized Mode (Shift+Click)"
+                          Command="{Binding ToggleSuperMinimalModeCommand}"
+                          Visibility="{Binding IsSuperMinimalMode, Converter={StaticResource InverseBoolToVisibilityConverter}}"/>
+                <MenuItem Header="Minimal Mode"
+                          Command="{Binding ToggleMinimalModeCommand}"/>
+                <MenuItem Header="Always on Top"
+                          IsCheckable="True"
+                          IsChecked="{Binding IsAlwaysOnTop, Mode=TwoWay}"/>
+                <Separator/>
+                <MenuItem Header="Close ST Stopwatch" Command="{Binding CloseCommand}"/>
+            </ContextMenu>
+        </Border.ContextMenu>
         <Border.Effect>
             <DropShadowEffect BlurRadius="16" ShadowDepth="4" Direction="270" Opacity="0.18" Color="#000000"/>
         </Border.Effect>
@@ -39,8 +64,8 @@
                     <RowDefinition Height="Auto"/>
                 </Grid.RowDefinitions>
 
-                <!-- HEADER BAR (Hidden in Minimal Mode) -->
-                <Border Grid.Row="0"
+                <!-- HEADER BAR (Hidden in Minimal and Super Minimal Mode) -->
+                <Border x:Name="HeaderBar" Grid.Row="0"
                         Background="#F0F4F8"
                         BorderBrush="#111111"
                         BorderThickness="0,0,0,1"
@@ -110,6 +135,23 @@
                                 <TextBlock Text="📌" FontSize="10" Foreground="{Binding Path=Foreground, RelativeSource={RelativeSource AncestorType=Button}}"/>
                             </Button>
 
+                            <!-- Auto Free Region Toggle Button (Settings) -->
+                            <Button Command="{Binding ToggleAutoFreeAreaCommand}"
+                                    Margin="0,0,4,0"
+                                    ToolTip="Auto-Position to Free Screen Region (Super Minimized)">
+                                <Button.Style>
+                                    <Style TargetType="Button" BasedOn="{StaticResource HeaderToolButtonStyle}">
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding IsAutoFreeAreaEnabled}" Value="True">
+                                                <Setter Property="Background" Value="#0052FF"/>
+                                                <Setter Property="Foreground" Value="#FFFFFF"/>
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </Button.Style>
+                                <TextBlock Text="🎯" FontSize="11" Foreground="{Binding Path=Foreground, RelativeSource={RelativeSource AncestorType=Button}}"/>
+                            </Button>
+
                             <!-- Minimal Mode Toggle Button -->
                             <Button Command="{Binding ToggleMinimalModeCommand}"
                                     Style="{StaticResource HeaderToolButtonStyle}"
@@ -137,7 +179,7 @@
                 </Border>
 
                 <!-- MINIMAL MODE TOP FLOATING STRIP (Only visible in Minimal Mode) -->
-                <Grid Grid.Row="0" Margin="10,6,10,0"
+                <Grid x:Name="MinimalTopStrip" Grid.Row="0" Margin="4,2,4,1"
                       Visibility="{Binding IsMinimalMode, Converter={StaticResource BoolToVisibilityConverter}}">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="*"/>
@@ -145,7 +187,7 @@
                     </Grid.ColumnDefinitions>
 
                     <!-- ST Logo mini badge -->
-                    <Border Width="20" Height="20"
+                    <Border Width="18" Height="18"
                             Background="#0052FF"
                             BorderBrush="#111111"
                             BorderThickness="1"
@@ -155,17 +197,25 @@
                                    FontFamily="Georgia"
                                    FontWeight="Bold"
                                    FontStyle="Italic"
-                                   FontSize="10"
+                                   FontSize="9"
                                    Foreground="#FFFFFF"
                                    HorizontalAlignment="Center"
                                    VerticalAlignment="Center"/>
                     </Border>
 
                     <StackPanel Grid.Column="1" Orientation="Horizontal">
+                        <!-- Super Minimal Mode Button -->
+                        <Button Command="{Binding ToggleSuperMinimalModeCommand}"
+                                Style="{StaticResource HeaderToolButtonStyle}"
+                                Width="20" Height="20" Margin="0,0,4,0"
+                                ToolTip="Super Minimized View (Shift+Click anywhere)">
+                            <TextBlock Text="⊙" FontSize="11" FontWeight="Bold" Foreground="#111111"/>
+                        </Button>
+
                         <!-- Restore Normal Mode Button -->
                         <Button Command="{Binding ToggleMinimalModeCommand}"
                                 Style="{StaticResource HeaderToolButtonStyle}"
-                                Width="22" Height="22" Margin="0,0,4,0"
+                                Width="20" Height="20" Margin="0,0,4,0"
                                 ToolTip="Expand to Normal Mode">
                             <TextBlock Text="⤡" FontSize="11" FontWeight="Bold" Foreground="#111111"/>
                         </Button>
@@ -173,7 +223,7 @@
                         <!-- Close Button -->
                         <Button Command="{Binding CloseCommand}"
                                 Style="{StaticResource HeaderToolButtonStyle}"
-                                Width="22" Height="22"
+                                Width="20" Height="20"
                                 ToolTip="Close">
                             <TextBlock Text="✕" FontSize="9" Foreground="#111111"/>
                         </Button>
@@ -181,7 +231,7 @@
                 </Grid>
 
                 <!-- STOPWATCH CIRCULAR INTERFACE (Row 1) -->
-                <Grid Grid.Row="1" Margin="16,10,16,6">
+                <Grid x:Name="RingArea" Grid.Row="1" Margin="16,10,16,6">
                     <Grid.RowDefinitions>
                         <!-- Session Indicator Pill (Only Session Number 01-12) -->
                         <RowDefinition Height="Auto"/>
@@ -197,7 +247,8 @@
                             CornerRadius="12"
                             Padding="10,3"
                             HorizontalAlignment="Center"
-                            Margin="0,0,0,6">
+                            Margin="0,0,0,6"
+                            Visibility="{Binding IsMinimalMode, Converter={StaticResource InverseBoolToVisibilityConverter}}">
                         <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
                             <!-- Colored dot matching current session -->
                             <Ellipse Width="8" Height="8"
@@ -217,7 +268,8 @@
                     </Border>
 
                     <!-- Large Circular Progress Ring with Editable Session Label, Slices, and Target Finish Time -->
-                    <controls:CircularProgressRing Grid.Row="1"
+                    <controls:CircularProgressRing x:Name="ProgressRing"
+                                                   Grid.Row="1"
                                                    Progress="{Binding Progress}"
                                                    Elapsed="{Binding Elapsed}"
                                                    TotalElapsed="{Binding TotalElapsed}"
@@ -227,29 +279,31 @@
                                                    RingBrush="{Binding CurrentSessionColor}"
                                                    CompletedSegments="{Binding CompletedSegments}"
                                                    IsRunning="{Binding IsRunning}"
-                                                   IsMinimalMode="{Binding IsMinimalMode}"/>
+                                                   IsMinimalMode="{Binding IsMinimalMode}"
+                                                   IsSuperMinimalMode="{Binding IsSuperMinimalMode}"/>
                 </Grid>
 
                 <!-- 3 CONTROLS (Row 2): Start/Pause on Left, Completed/End in Middle, Next on Right -->
-                <Border Grid.Row="2"
+                <Border x:Name="ControlsBar" Grid.Row="2"
                         Background="#FFFFFF"
                         BorderBrush="#111111"
                         BorderThickness="0,1,0,0"
                         Padding="16,12">
-                    <Grid HorizontalAlignment="Center">
+                    <Grid x:Name="ButtonGrid" HorizontalAlignment="Center">
                         <Grid.ColumnDefinitions>
                             <!-- 1. Start / Pause / Resume (Left) -->
                             <ColumnDefinition Width="Auto"/>
-                            <ColumnDefinition Width="14"/>
+                            <ColumnDefinition x:Name="ControlsColGap1" Width="14"/>
                             <!-- 2. Completed / End (Middle) -->
                             <ColumnDefinition Width="Auto"/>
-                            <ColumnDefinition Width="14"/>
+                            <ColumnDefinition x:Name="ControlsColGap2" Width="14"/>
                             <!-- 3. Next Session (Right) -->
                             <ColumnDefinition Width="Auto"/>
                         </Grid.ColumnDefinitions>
 
                         <!-- 1. Start / Pause / Resume Button (Left) -->
-                        <Button Grid.Column="0"
+                        <Button x:Name="PlayPauseButton"
+                                Grid.Column="0"
                                 Command="{Binding PlayPauseCommand}"
                                 Style="{StaticResource PrimaryActionButtonStyle}"
                                 Width="68" Height="46"
@@ -282,7 +336,8 @@
                         </Button>
 
                         <!-- 2. Completed / End Button (Middle) -->
-                        <Button Grid.Column="2"
+                        <Button x:Name="CompleteSessionButton"
+                                Grid.Column="2"
                                 Command="{Binding CompleteSessionCommand}"
                                 Style="{StaticResource OutlineActionButtonStyle}"
                                 Width="88" Height="46"
@@ -300,7 +355,8 @@
                         </Button>
 
                         <!-- 3. Next Session Button (Right) -->
-                        <Button Grid.Column="4"
+                        <Button x:Name="NextSessionButton"
+                                Grid.Column="4"
                                 Command="{Binding NextSessionCommand}"
                                 Style="{StaticResource SecondaryActionButtonStyle}"
                                 Width="68" Height="46"

@@ -32,6 +32,7 @@ namespace STStopwatch.ViewModels
             PreviousMonthCommand = new RelayCommand(ExecutePreviousMonth);
             NextMonthCommand = new RelayCommand(ExecuteNextMonth);
             CurrentMonthCommand = new RelayCommand(ExecuteCurrentMonth);
+            DeleteSessionCommand = new RelayCommand(ExecuteDeleteSession, CanDeleteSession);
 
             Refresh();
         }
@@ -102,6 +103,21 @@ namespace STStopwatch.ViewModels
         public ICommand PreviousMonthCommand { get; private set; }
         public ICommand NextMonthCommand { get; private set; }
         public ICommand CurrentMonthCommand { get; private set; }
+        public ICommand DeleteSessionCommand { get; private set; }
+
+        private bool CanDeleteSession(object parameter)
+        {
+            return parameter is SessionRecord;
+        }
+
+        private void ExecuteDeleteSession(object parameter)
+        {
+            var record = parameter as SessionRecord;
+            if (record == null) return;
+
+            _storageService.DeleteRecord(record);
+            Refresh();
+        }
 
         private void ExecutePreviousDay()
         {

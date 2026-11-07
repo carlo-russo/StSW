@@ -181,6 +181,53 @@ namespace STStopwatch.Services
             }
         }
 
+        public void DeleteRecord(SessionRecord record)
+        {
+            if (record == null) return;
+
+            lock (_fileLock)
+            {
+                try
+                {
+                    List<SessionRecord> records = LoadRecords();
+                    int index = -1;
+
+                    if (!string.IsNullOrEmpty(record.Id))
+                    {
+                        index = records.FindIndex(r => r.Id == record.Id);
+                    }
+
+                    // Older saved records may not have an ID. Match identifying
+                    // fields and remove only the first matching session.
+                    if (index < 0)
+                    {
+                        index = records.FindIndex(r =>
+                            r.SessionNumber == record.SessionNumber &&
+                            r.StartTime == record.StartTime &&
+                            r.EndTime == record.EndTime &&
+                            r.SessionLabel == record.SessionLabel);
+                    }
+
+                    if (index < 0) return;
+                    records.RemoveAt(index);
+
+                    string tempPath = _recordsFilePath + ".tmp";
+                    using (var fs = new FileStream(tempPath, FileMode.Create, FileAccess.Write, FileShare.None))
+                    {
+                        var serializer = new DataContractJsonSerializer(typeof(List<SessionRecord>));
+                        serializer.WriteObject(fs, records);
+                    }
+
+                    if (File.Exists(_recordsFilePath)) File.Delete(_recordsFilePath);
+                    File.Move(tempPath, _recordsFilePath);
+                }
+                catch
+                {
+                    // Fail safely
+                }
+            }
+        }
+
         public void DeleteAllRecords()
         {
             lock (_fileLock)

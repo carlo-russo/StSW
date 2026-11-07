@@ -40,6 +40,7 @@ namespace STStopwatch.Tests
         public void SaveSettings(UserSettings settings) { Settings = settings; }
         public List<SessionRecord> LoadRecords() { return new List<SessionRecord>(Records); }
         public void SaveRecord(SessionRecord record) { Records.Add(record); }
+        public void DeleteRecord(SessionRecord record) { Records.RemoveAll(r => r.Id == record.Id); }
         public void DeleteAllRecords() { Records.Clear(); }
     }
 
@@ -153,12 +154,16 @@ namespace STStopwatch.Tests
 
                 settings.IsAlwaysOnTop = true;
                 settings.IsMinimalMode = true;
+                settings.IsSuperMinimalMode = true;
+                settings.IsAutoFreeAreaEnabled = true;
                 settings.CurrentSessionNumber = 5;
                 storage.SaveSettings(settings);
 
                 var reloaded = storage.LoadSettings();
                 Assert(reloaded.IsAlwaysOnTop == true, "Persisted IsAlwaysOnTop verified");
                 Assert(reloaded.IsMinimalMode == true, "Persisted IsMinimalMode verified");
+                Assert(reloaded.IsSuperMinimalMode == true, "Persisted IsSuperMinimalMode verified");
+                Assert(reloaded.IsAutoFreeAreaEnabled == true, "Persisted IsAutoFreeAreaEnabled verified");
                 Assert(reloaded.CurrentSessionNumber == 5, "Persisted CurrentSessionNumber verified");
 
                 // Test Session Record persistence
@@ -241,11 +246,26 @@ namespace STStopwatch.Tests
             vm.ToggleMinimalModeCommand.Execute(null);
             Assert(!vm.IsMinimalMode, "Minimal mode disabled");
 
+            // Super Minimal mode toggle
+            Assert(!vm.IsSuperMinimalMode, "Initially not super minimal mode");
+            vm.ToggleSuperMinimalModeCommand.Execute(null);
+            Assert(vm.IsSuperMinimalMode, "Super minimal mode enabled");
+            Assert(vm.IsMinimalMode, "Super minimal mode implies minimal mode");
+            vm.ToggleSuperMinimalModeCommand.Execute(null);
+            Assert(!vm.IsSuperMinimalMode, "Super minimal mode disabled");
+
             // Always on top toggle
             Assert(!vm.IsAlwaysOnTop, "Initially not topmost");
             vm.ToggleAlwaysOnTopCommand.Execute(null);
             Assert(vm.IsAlwaysOnTop, "Always on top enabled");
             Assert(tray.LastAlwaysOnTop, "Tray updated with topmost state");
+
+            // Auto Free Area toggle
+            Assert(!vm.IsAutoFreeAreaEnabled, "Initially auto free area is disabled for manual positioning");
+            vm.ToggleAutoFreeAreaCommand.Execute(null);
+            Assert(vm.IsAutoFreeAreaEnabled, "Auto free area enabled");
+            vm.ToggleAutoFreeAreaCommand.Execute(null);
+            Assert(!vm.IsAutoFreeAreaEnabled, "Auto free area disabled for manual positioning");
         }
 
         static void TestStatisticsDayAndMonthViews()

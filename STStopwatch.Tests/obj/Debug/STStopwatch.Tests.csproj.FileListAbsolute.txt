@@ -1,14 +1,8 @@
 C:\Users\sekoz\StartToday\STStopwatch.Tests\bin\Debug\Assets\app.ico
 C:\Users\sekoz\StartToday\STStopwatch.Tests\bin\Debug\STStopwatch.Tests.exe
 C:\Users\sekoz\StartToday\STStopwatch.Tests\bin\Debug\STStopwatch.Tests.pdb
-C:\Users\sekoz\StartToday\STStopwatch.Tests\bin\Debug\mscorlib.dll
 C:\Users\sekoz\StartToday\STStopwatch.Tests\bin\Debug\STStopwatch.exe
 C:\Users\sekoz\StartToday\STStopwatch.Tests\bin\Debug\STStopwatch.pdb
-C:\Users\sekoz\StartToday\STStopwatch.Tests\bin\Debug\normidna.nlp
-C:\Users\sekoz\StartToday\STStopwatch.Tests\bin\Debug\normnfc.nlp
-C:\Users\sekoz\StartToday\STStopwatch.Tests\bin\Debug\normnfd.nlp
-C:\Users\sekoz\StartToday\STStopwatch.Tests\bin\Debug\normnfkc.nlp
-C:\Users\sekoz\StartToday\STStopwatch.Tests\bin\Debug\normnfkd.nlp
 C:\Users\sekoz\StartToday\STStopwatch.Tests\obj\Debug\STStopwatch.Tests.csprojResolveAssemblyReference.cache
 C:\Users\sekoz\StartToday\STStopwatch.Tests\obj\Debug\STStopwatch.Tests.exe
 C:\Users\sekoz\StartToday\STStopwatch.Tests\obj\Debug\STStopwatch.Tests.pdb

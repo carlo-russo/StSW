@@ -4,6 +4,7 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
+using System.Windows.Media.Animation;
 using System.Windows.Shapes;
 using STStopwatch.Models;
 
@@ -43,6 +44,10 @@ namespace STStopwatch.Controls
             DependencyProperty.Register("IsMinimalMode", typeof(bool), typeof(CircularProgressRing),
                 new FrameworkPropertyMetadata(false, OnIsMinimalModeChanged));
 
+        public static readonly DependencyProperty IsSuperMinimalModeProperty =
+            DependencyProperty.Register("IsSuperMinimalMode", typeof(bool), typeof(CircularProgressRing),
+                new FrameworkPropertyMetadata(false, OnIsSuperMinimalModeChanged));
+
         public static readonly DependencyProperty IsRunningProperty =
             DependencyProperty.Register("IsRunning", typeof(bool), typeof(CircularProgressRing),
                 new FrameworkPropertyMetadata(false, OnIsRunningChanged));
@@ -52,6 +57,7 @@ namespace STStopwatch.Controls
                 new FrameworkPropertyMetadata(null, OnCompletedSegmentsChanged));
 
         private bool _isDraggingThumb;
+        private bool _isGlowEnabled = true;
         private Point _center;
         private double _radius;
         private const double MaxDurationHours = 16.0;
@@ -61,7 +67,7 @@ namespace STStopwatch.Controls
         public CircularProgressRing()
         {
             InitializeComponent();
-            Loaded += delegate { UpdateLayoutGeometry(); };
+            Loaded += delegate { ApplyModeStyles(); };
         }
 
         public double Progress
@@ -110,6 +116,12 @@ namespace STStopwatch.Controls
         {
             get { return (bool)GetValue(IsMinimalModeProperty); }
             set { SetValue(IsMinimalModeProperty, value); }
+        }
+
+        public bool IsSuperMinimalMode
+        {
+            get { return (bool)GetValue(IsSuperMinimalModeProperty); }
+            set { SetValue(IsSuperMinimalModeProperty, value); }
         }
 
         public bool IsRunning
@@ -185,14 +197,14 @@ namespace STStopwatch.Controls
             }
         }
 
+        private Storyboard _glowPulseStoryboard;
+
         private static void OnRingBrushChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
         {
             var ring = d as CircularProgressRing;
             if (ring != null)
             {
-                var brush = e.NewValue as Brush;
-                ring.ProgressArcPath.Stroke = brush;
-                ring.ThumbInnerCore.Fill = brush;
+                ring.UpdateColorsForTheme();
             }
         }
 
@@ -213,26 +225,154 @@ namespace STStopwatch.Controls
             var ring = d as CircularProgressRing;
             if (ring != null)
             {
-                bool isMin = (bool)e.NewValue;
-                if (isMin)
-                {
-                    ring.RingCanvas.Width = 240;
-                    ring.RingCanvas.Height = 240;
-                    ring.CompletedSegmentsCanvas.Width = 240;
-                    ring.CompletedSegmentsCanvas.Height = 240;
-                    ring.ElapsedDisplay.FontSize = 32;
-                    ring.SessionLabelBox.FontSize = 14;
-                }
-                else
-                {
-                    ring.RingCanvas.Width = 280;
-                    ring.RingCanvas.Height = 280;
-                    ring.CompletedSegmentsCanvas.Width = 280;
-                    ring.CompletedSegmentsCanvas.Height = 280;
-                    ring.ElapsedDisplay.FontSize = 40;
-                    ring.SessionLabelBox.FontSize = 17;
-                }
-                ring.UpdateLayoutGeometry();
+                ring.ApplyModeStyles();
+            }
+        }
+
+        private static void OnIsSuperMinimalModeChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+        {
+            var ring = d as CircularProgressRing;
+            if (ring != null)
+            {
+                ring.ApplyModeStyles();
+            }
+        }
+
+        public void ApplyModeStyles()
+        {
+            if (IsSuperMinimalMode)
+            {
+                RingCanvas.Width = 190;
+                RingCanvas.Height = 190;
+                CompletedSegmentsCanvas.Width = 190;
+                CompletedSegmentsCanvas.Height = 190;
+                ElapsedDisplay.FontSize = 22;
+                SessionLabelBox.FontSize = 11;
+                SessionLabelBox.IsHitTestVisible = false;
+                SessionLabelBox.Focusable = false;
+                FinishTimePanel.Visibility = Visibility.Collapsed;
+                TrackPath.StrokeThickness = 7;
+                ProgressArcPath.StrokeThickness = 7;
+                AdjustmentThumb.Visibility = Visibility.Collapsed;
+
+                SuperMiniBackgroundEllipse.Visibility = Visibility.Visible;
+                EdgeGlowEllipse.Visibility = _isGlowEnabled ? Visibility.Visible : Visibility.Collapsed;
+                SuperMiniLogoBadge.Visibility = Visibility.Visible;
+
+                UpdateColorsForTheme();
+                if (_isGlowEnabled) StartGlowPulse();
+            }
+            else if (IsMinimalMode)
+            {
+                RingCanvas.Width = 190;
+                RingCanvas.Height = 190;
+                CompletedSegmentsCanvas.Width = 190;
+                CompletedSegmentsCanvas.Height = 190;
+                ElapsedDisplay.FontSize = 25;
+                SessionLabelBox.FontSize = 12;
+                SessionLabelBox.IsHitTestVisible = true;
+                SessionLabelBox.Focusable = true;
+                FinishTimePanel.Visibility = Visibility.Collapsed;
+                TrackPath.StrokeThickness = 8;
+                ProgressArcPath.StrokeThickness = 8;
+                AdjustmentThumb.Visibility = Visibility.Visible;
+                AdjustmentThumb.Width = 16;
+                AdjustmentThumb.Height = 16;
+
+                SuperMiniBackgroundEllipse.Visibility = Visibility.Collapsed;
+                EdgeGlowEllipse.Visibility = Visibility.Collapsed;
+                SuperMiniLogoBadge.Visibility = Visibility.Collapsed;
+
+                UpdateColorsForTheme();
+                StopGlowPulse();
+            }
+            else
+            {
+                RingCanvas.Width = 280;
+                RingCanvas.Height = 280;
+                CompletedSegmentsCanvas.Width = 280;
+                CompletedSegmentsCanvas.Height = 280;
+                ElapsedDisplay.FontSize = 40;
+                SessionLabelBox.FontSize = 17;
+                SessionLabelBox.IsHitTestVisible = true;
+                SessionLabelBox.Focusable = true;
+                FinishTimePanel.Visibility = Visibility.Visible;
+                TrackPath.StrokeThickness = 10;
+                ProgressArcPath.StrokeThickness = 10;
+                AdjustmentThumb.Visibility = Visibility.Visible;
+                AdjustmentThumb.Width = 22;
+                AdjustmentThumb.Height = 22;
+
+                SuperMiniBackgroundEllipse.Visibility = Visibility.Collapsed;
+                EdgeGlowEllipse.Visibility = Visibility.Collapsed;
+                SuperMiniLogoBadge.Visibility = Visibility.Collapsed;
+
+                UpdateColorsForTheme();
+                StopGlowPulse();
+            }
+            UpdateLayoutGeometry();
+        }
+
+        private void UpdateColorsForTheme()
+        {
+            var brush = RingBrush;
+            if (brush == null) brush = new SolidColorBrush(Color.FromRgb(0, 82, 255));
+
+            ProgressArcPath.Stroke = brush;
+            ThumbInnerCore.Fill = brush;
+            SuperMiniLogoBadge.Background = brush;
+
+            var solidBrush = brush as SolidColorBrush;
+            Color themeColor = solidBrush != null ? solidBrush.Color : Color.FromRgb(0, 82, 255);
+
+            EdgeGlowEllipse.Stroke = brush;
+            EdgeGlowEffect.Color = themeColor;
+        }
+
+        private void StartGlowPulse()
+        {
+            StopGlowPulse();
+            if (!_isGlowEnabled || !IsSuperMinimalMode) return;
+
+            // Periodic subtle edge glow pulsing
+            var glowAnim = new DoubleAnimation
+            {
+                From = 0.35,
+                To = 0.85,
+                Duration = new Duration(TimeSpan.FromSeconds(1.6)),
+                AutoReverse = true,
+                RepeatBehavior = RepeatBehavior.Forever
+            };
+            _glowPulseStoryboard = new Storyboard();
+            _glowPulseStoryboard.Children.Add(glowAnim);
+            Storyboard.SetTarget(glowAnim, EdgeGlowEllipse);
+            Storyboard.SetTargetProperty(glowAnim, new PropertyPath("Opacity"));
+            _glowPulseStoryboard.Begin();
+        }
+
+        private void StopGlowPulse()
+        {
+            if (_glowPulseStoryboard != null)
+            {
+                _glowPulseStoryboard.Stop();
+                _glowPulseStoryboard = null;
+            }
+        }
+
+        public void ToggleSuperMiniGlow()
+        {
+            _isGlowEnabled = !_isGlowEnabled;
+            EdgeGlowEllipse.Visibility = IsSuperMinimalMode && _isGlowEnabled
+                ? Visibility.Visible
+                : Visibility.Collapsed;
+
+            if (IsSuperMinimalMode && _isGlowEnabled)
+            {
+                StartGlowPulse();
+            }
+            else
+            {
+                StopGlowPulse();
             }
         }
 
@@ -249,7 +389,33 @@ namespace STStopwatch.Controls
 
             _center = new Point(size / 2.0, size / 2.0);
             double strokeThickness = ProgressArcPath.StrokeThickness;
-            _radius = (size - strokeThickness - 16.0) / 2.0;
+
+            if (IsSuperMinimalMode)
+            {
+                _radius = (size - strokeThickness - 22.0) / 2.0;
+
+                double bgSize = _radius * 2.0 + strokeThickness + 6.0;
+                SuperMiniBackgroundEllipse.Width = bgSize;
+                SuperMiniBackgroundEllipse.Height = bgSize;
+                Canvas.SetLeft(SuperMiniBackgroundEllipse, _center.X - bgSize / 2.0);
+                Canvas.SetTop(SuperMiniBackgroundEllipse, _center.Y - bgSize / 2.0);
+
+                double glowSize = _radius * 2.0 + strokeThickness + 10.0;
+                EdgeGlowEllipse.Width = glowSize;
+                EdgeGlowEllipse.Height = glowSize;
+                Canvas.SetLeft(EdgeGlowEllipse, _center.X - glowSize / 2.0);
+                Canvas.SetTop(EdgeGlowEllipse, _center.Y - glowSize / 2.0);
+
+            }
+            else if (IsMinimalMode)
+            {
+                // In minimal mode, outer boundary of ring and thumb almost touches the canvas border (188px on 190px canvas)
+                _radius = (size - 18.0) / 2.0;
+            }
+            else
+            {
+                _radius = (size - strokeThickness - 16.0) / 2.0;
+            }
 
             var trackGeom = new EllipseGeometry(_center, _radius, _radius);
             TrackPath.Data = trackGeom;
@@ -314,7 +480,7 @@ namespace STStopwatch.Controls
                             var segPath = new Path
                             {
                                 Stroke = seg.SegmentBrush,
-                                StrokeThickness = 10,
+                                StrokeThickness = ProgressArcPath.StrokeThickness,
                                 StrokeStartLineCap = PenLineCap.Round,
                                 StrokeEndLineCap = PenLineCap.Round,
                                 Data = CreateArcGeometry(seg.StartAngleDeg, seg.EndAngleDeg)

@@ -9,6 +9,7 @@ namespace STStopwatch.Services
         void SaveSettings(UserSettings settings);
         List<SessionRecord> LoadRecords();
         void SaveRecord(SessionRecord record);
+        void DeleteRecord(SessionRecord record);
         void DeleteAllRecords();
     }
 }

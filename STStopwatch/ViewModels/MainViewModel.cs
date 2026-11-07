@@ -27,6 +27,8 @@ namespace STStopwatch.ViewModels
         private string _targetFinishTimeText;
         private double _progress;
         private bool _isMinimalMode;
+        private bool _isSuperMinimalMode;
+        private bool _isAutoFreeAreaEnabled;
         private bool _isAlwaysOnTop;
         private bool _isStatisticsOpen;
         private DateTime _sessionStartTime;
@@ -48,6 +50,8 @@ namespace STStopwatch.ViewModels
             UserSettings settings = _storageService.LoadSettings();
             _isAlwaysOnTop = settings.IsAlwaysOnTop;
             _isMinimalMode = settings.IsMinimalMode;
+            _isSuperMinimalMode = settings.IsSuperMinimalMode;
+            _isAutoFreeAreaEnabled = settings.IsAutoFreeAreaEnabled;
 
             // Global constant target duration
             if (settings.GlobalTargetDurationSeconds >= 60.0)
@@ -77,6 +81,8 @@ namespace STStopwatch.ViewModels
             CompleteSessionCommand = new RelayCommand(ExecuteCompleteSession, CanExecuteCompleteSession);
             NextSessionCommand = new RelayCommand(ExecuteNextSession);
             ToggleMinimalModeCommand = new RelayCommand(ExecuteToggleMinimalMode);
+            ToggleSuperMinimalModeCommand = new RelayCommand(ExecuteToggleSuperMinimalMode);
+            ToggleAutoFreeAreaCommand = new RelayCommand(ExecuteToggleAutoFreeArea);
             ToggleAlwaysOnTopCommand = new RelayCommand(ExecuteToggleAlwaysOnTop);
             ToggleStatisticsCommand = new RelayCommand(ExecuteToggleStatistics);
             CloseCommand = new RelayCommand(ExecuteClose);
@@ -217,11 +223,56 @@ namespace STStopwatch.ViewModels
             {
                 if (SetProperty(ref _isMinimalMode, value, "IsMinimalMode"))
                 {
+                    if (!value)
+                    {
+                        if (_isSuperMinimalMode)
+                        {
+                            _isSuperMinimalMode = false;
+                            OnPropertyChanged("IsSuperMinimalMode");
+                        }
+                    }
                     if (value && _isStatisticsOpen)
                     {
                         IsStatisticsOpen = false;
                     }
                     _trayService.UpdateState(_isMinimalMode, _isAlwaysOnTop);
+                    SaveSettings();
+                }
+            }
+        }
+
+        public bool IsSuperMinimalMode
+        {
+            get { return _isSuperMinimalMode; }
+            set
+            {
+                if (SetProperty(ref _isSuperMinimalMode, value, "IsSuperMinimalMode"))
+                {
+                    if (value)
+                    {
+                        if (!_isMinimalMode)
+                        {
+                            _isMinimalMode = true;
+                            OnPropertyChanged("IsMinimalMode");
+                        }
+                        if (_isStatisticsOpen)
+                        {
+                            IsStatisticsOpen = false;
+                        }
+                    }
+                    _trayService.UpdateState(_isMinimalMode, _isAlwaysOnTop);
+                    SaveSettings();
+                }
+            }
+        }
+
+        public bool IsAutoFreeAreaEnabled
+        {
+            get { return _isAutoFreeAreaEnabled; }
+            set
+            {
+                if (SetProperty(ref _isAutoFreeAreaEnabled, value, "IsAutoFreeAreaEnabled"))
+                {
                     SaveSettings();
                 }
             }
@@ -259,6 +310,8 @@ namespace STStopwatch.ViewModels
         public ICommand CompleteSessionCommand { get; private set; }
         public ICommand NextSessionCommand { get; private set; }
         public ICommand ToggleMinimalModeCommand { get; private set; }
+        public ICommand ToggleSuperMinimalModeCommand { get; private set; }
+        public ICommand ToggleAutoFreeAreaCommand { get; private set; }
         public ICommand ToggleAlwaysOnTopCommand { get; private set; }
         public ICommand ToggleStatisticsCommand { get; private set; }
         public ICommand CloseCommand { get; private set; }
@@ -501,7 +554,25 @@ namespace STStopwatch.ViewModels
 
         private void ExecuteToggleMinimalMode()
         {
-            IsMinimalMode = !IsMinimalMode;
+            if (IsSuperMinimalMode)
+            {
+                IsSuperMinimalMode = false;
+                IsMinimalMode = false;
+            }
+            else
+            {
+                IsMinimalMode = !IsMinimalMode;
+            }
+        }
+
+        private void ExecuteToggleSuperMinimalMode()
+        {
+            IsSuperMinimalMode = !IsSuperMinimalMode;
+        }
+
+        private void ExecuteToggleAutoFreeArea()
+        {
+            IsAutoFreeAreaEnabled = !IsAutoFreeAreaEnabled;
         }
 
         private void ExecuteToggleAlwaysOnTop()
@@ -538,6 +609,8 @@ namespace STStopwatch.ViewModels
             settings.CurrentSessionNumber = CurrentSessionNumber;
             settings.IsAlwaysOnTop = IsAlwaysOnTop;
             settings.IsMinimalMode = IsMinimalMode;
+            settings.IsSuperMinimalMode = IsSuperMinimalMode;
+            settings.IsAutoFreeAreaEnabled = IsAutoFreeAreaEnabled;
             settings.GlobalTargetDurationSeconds = TargetDuration.TotalSeconds;
             settings.CustomSessionLabelTemplate = _sessionLabelText;
 

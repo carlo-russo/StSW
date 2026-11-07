@@ -93,6 +93,7 @@
                     <ColumnDefinition Width="65"/>
                     <ColumnDefinition Width="65"/>
                     <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="32"/>
                 </Grid.ColumnDefinitions>
                 <TextBlock Grid.Column="0" Text="SESSION" FontFamily="Segoe UI" FontSize="10" FontWeight="Bold" Foreground="#64748B"/>
                 <TextBlock Grid.Column="1" Text="TIME" FontFamily="Segoe UI" FontSize="10" FontWeight="Bold" Foreground="#64748B"/>
@@ -117,6 +118,7 @@
                                         <ColumnDefinition Width="65"/>
                                         <ColumnDefinition Width="65"/>
                                         <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="32"/>
                                     </Grid.ColumnDefinitions>
 
                                     <!-- Session Badge -->
@@ -137,6 +139,15 @@
                                     <Border Grid.Column="4" Background="#F0F4F8" BorderBrush="#111111" BorderThickness="1" CornerRadius="3" Padding="4,1" HorizontalAlignment="Right" VerticalAlignment="Center">
                                         <TextBlock Text="{Binding CompletionStatusText}" FontFamily="Segoe UI" FontSize="9" FontWeight="SemiBold" Foreground="#0052FF"/>
                                     </Border>
+
+                                    <Button Grid.Column="5"
+                                            Command="{Binding DataContext.DeleteSessionCommand, RelativeSource={RelativeSource AncestorType={x:Type UserControl}}}"
+                                            CommandParameter="{Binding}"
+                                            Background="Transparent" BorderThickness="0" Padding="4,0"
+                                            Foreground="#B91C1C" FontSize="15" FontWeight="Bold"
+                                            ToolTip="Delete session" AutomationProperties.Name="Delete session">
+                                        <TextBlock Text="×"/>
+                                    </Button>
                                 </Grid>
                             </Border>
                         </DataTemplate>

@@ -1,11 +1,30 @@
 using System;
+using System.ComponentModel;
 using System.Runtime.Serialization;
 
 namespace STStopwatch.Models
 {
     [DataContract]
-    public class SessionRecord
+    public class SessionRecord : INotifyPropertyChanged
     {
+        private bool _isDayViewSelected;
+
+        public event PropertyChangedEventHandler PropertyChanged;
+
+        public bool IsDayViewSelected
+        {
+            get { return _isDayViewSelected; }
+            set
+            {
+                if (_isDayViewSelected == value) return;
+                _isDayViewSelected = value;
+                if (PropertyChanged != null)
+                {
+                    PropertyChanged(this, new PropertyChangedEventArgs("IsDayViewSelected"));
+                }
+            }
+        }
+
         [DataMember]
         public string Id { get; set; }
 

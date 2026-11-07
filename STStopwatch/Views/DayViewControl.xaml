@@ -89,10 +89,13 @@
 
         <!-- One segmented ring: each day's session contributes its duration and color. -->
         <local:DayDurationRing Grid.Row="2"
+                               x:Name="DayDurationRingControl"
                                Width="96" Height="96"
                                HorizontalAlignment="Center"
                                Margin="0,0,0,6"
-                               Records="{Binding DaySummary.Records}" />
+                               Records="{Binding DaySummary.Records}"
+                               Cursor="Hand"
+                               ToolTip="Click a session's colored time span to highlight its row" />
 
         <!-- Table Columns Header -->
         <Border Grid.Row="3" Background="#F8FAFC" BorderBrush="#E2E8F0" BorderThickness="0,1,0,1" Margin="12,0,12,4" Padding="6,4">
@@ -120,7 +123,19 @@
                 <ItemsControl ItemsSource="{Binding DaySummary.Records}">
                     <ItemsControl.ItemTemplate>
                         <DataTemplate>
-                            <Border BorderBrush="#E2E8F0" BorderThickness="0,0,0,1" Padding="4,6">
+                            <Border BorderThickness="0,0,0,1" Padding="4,6">
+                                <Border.Style>
+                                    <Style TargetType="Border">
+                                        <Setter Property="Background" Value="Transparent"/>
+                                        <Setter Property="BorderBrush" Value="#E2E8F0"/>
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding IsDayViewSelected}" Value="True">
+                                                <Setter Property="Background" Value="#DBEAFE"/>
+                                                <Setter Property="BorderBrush" Value="#0052FF"/>
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </Border.Style>
                                 <Grid>
                                     <Grid.ColumnDefinitions>
                                         <ColumnDefinition Width="70"/>

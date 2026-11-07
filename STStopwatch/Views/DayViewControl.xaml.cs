@@ -13,6 +13,19 @@ namespace STStopwatch.Views
         public DayViewControl()
         {
             InitializeComponent();
+            DayDurationRingControl.SessionSelected += OnDayDurationSessionSelected;
+        }
+
+        private void OnDayDurationSessionSelected(SessionRecord selectedRecord)
+        {
+            var viewModel = DataContext as STStopwatch.ViewModels.StatisticsViewModel;
+            if (viewModel == null || viewModel.DaySummary == null) return;
+
+            IList<SessionRecord> records = viewModel.DaySummary.Records;
+            for (int i = 0; i < records.Count; i++)
+            {
+                records[i].IsDayViewSelected = object.ReferenceEquals(records[i], selectedRecord);
+            }
         }
     }
 
@@ -26,6 +39,56 @@ namespace STStopwatch.Views
         {
             get { return (IList<SessionRecord>)GetValue(RecordsProperty); }
             set { SetValue(RecordsProperty, value); }
+        }
+
+        public event Action<SessionRecord> SessionSelected;
+
+        protected override void OnMouseLeftButtonDown(System.Windows.Input.MouseButtonEventArgs e)
+        {
+            base.OnMouseLeftButtonDown(e);
+
+            Point point = e.GetPosition(this);
+            double size = Math.Min(ActualWidth, ActualHeight);
+            double stroke = Math.Max(5.0, size * 0.09);
+            double radius = (size - stroke) / 2.0;
+            Point center = new Point(ActualWidth / 2.0, ActualHeight / 2.0);
+            double dx = point.X - center.X;
+            double dy = point.Y - center.Y;
+            double distance = Math.Sqrt(dx * dx + dy * dy);
+
+            SessionRecord selected = null;
+            if (Math.Abs(distance - radius) <= stroke / 2.0 + 6.0)
+            {
+                double angle = (Math.Atan2(dy, dx) * 180.0 / Math.PI + 90.0 + 360.0) % 360.0;
+                double angularTolerance = (stroke / 2.0 + 3.0) / radius * 180.0 / Math.PI;
+                IList<SessionRecord> records = Records;
+                if (records != null)
+                {
+                    for (int i = 0; i < records.Count; i++)
+                    {
+                        SessionRecord record = records[i];
+                        if (record == null || record.ElapsedSeconds <= 0) continue;
+
+                        double startSeconds = record.StartTime.TimeOfDay.TotalSeconds;
+                        double durationSeconds = Math.Min(record.ElapsedDuration.TotalSeconds, 24.0 * 60.0 * 60.0 - startSeconds);
+                        double startAngle = startSeconds / (24.0 * 60.0 * 60.0) * 360.0;
+                        double sweep = durationSeconds / (24.0 * 60.0 * 60.0) * 360.0;
+                        double offset = (angle - startAngle + 360.0) % 360.0;
+                        if (durationSeconds > 0 && (offset <= sweep + angularTolerance || offset >= 360.0 - angularTolerance))
+                        {
+                            selected = record;
+                            break;
+                        }
+                    }
+                }
+            }
+
+            if (SessionSelected != null)
+            {
+                SessionSelected(selected);
+            }
+
+            e.Handled = true;
         }
 
         protected override void OnRender(DrawingContext drawingContext)

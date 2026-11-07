@@ -3,6 +3,7 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:local="clr-namespace:STStopwatch.Views"
              mc:Ignorable="d" 
              d:DesignHeight="400" d:DesignWidth="380">
     <Grid Background="#FFFFFF">
@@ -10,6 +11,8 @@
             <!-- Navigation Header -->
             <RowDefinition Height="Auto"/>
             <!-- Totals Metrics Cards -->
+            <RowDefinition Height="Auto"/>
+            <!-- Combined duration ring for all sessions in the selected day -->
             <RowDefinition Height="Auto"/>
             <!-- Table Header -->
             <RowDefinition Height="Auto"/>
@@ -84,8 +87,15 @@
             </Border>
         </Grid>
 
+        <!-- One segmented ring: each day's session contributes its duration and color. -->
+        <local:DayDurationRing Grid.Row="2"
+                               Width="96" Height="96"
+                               HorizontalAlignment="Center"
+                               Margin="0,0,0,6"
+                               Records="{Binding DaySummary.Records}" />
+
         <!-- Table Columns Header -->
-        <Border Grid.Row="2" Background="#F8FAFC" BorderBrush="#E2E8F0" BorderThickness="0,1,0,1" Margin="12,0,12,4" Padding="6,4">
+        <Border Grid.Row="3" Background="#F8FAFC" BorderBrush="#E2E8F0" BorderThickness="0,1,0,1" Margin="12,0,12,4" Padding="6,4">
             <Grid>
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="70"/>
@@ -104,7 +114,7 @@
         </Border>
 
         <!-- Records List or Empty State -->
-        <ScrollViewer Grid.Row="3" Margin="12,0,12,8" VerticalScrollBarVisibility="Auto">
+        <ScrollViewer Grid.Row="4" Margin="12,0,12,8" VerticalScrollBarVisibility="Auto">
             <StackPanel>
                 <!-- Items Control for Day Records -->
                 <ItemsControl ItemsSource="{Binding DaySummary.Records}">

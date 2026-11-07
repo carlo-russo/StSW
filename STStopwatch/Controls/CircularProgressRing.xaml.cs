@@ -36,6 +36,10 @@ namespace STStopwatch.Controls
             DependencyProperty.Register("SessionLabel", typeof(string), typeof(CircularProgressRing),
                 new FrameworkPropertyMetadata("Session 01", FrameworkPropertyMetadataOptions.BindsTwoWayByDefault, OnSessionLabelChanged));
 
+        public static readonly DependencyProperty DayDurationTextProperty =
+            DependencyProperty.Register("DayDurationText", typeof(string), typeof(CircularProgressRing),
+                new FrameworkPropertyMetadata("00:00", OnDayDurationTextChanged));
+
         public static readonly DependencyProperty RingBrushProperty =
             DependencyProperty.Register("RingBrush", typeof(Brush), typeof(CircularProgressRing),
                 new FrameworkPropertyMetadata(new SolidColorBrush(Color.FromRgb(0, 82, 255)), OnRingBrushChanged));
@@ -104,6 +108,12 @@ namespace STStopwatch.Controls
         {
             get { return (string)GetValue(SessionLabelProperty); }
             set { SetValue(SessionLabelProperty, value); }
+        }
+
+        public string DayDurationText
+        {
+            get { return (string)GetValue(DayDurationTextProperty); }
+            set { SetValue(DayDurationTextProperty, value); }
         }
 
         public Brush RingBrush
@@ -197,6 +207,16 @@ namespace STStopwatch.Controls
             }
         }
 
+        private static void OnDayDurationTextChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+        {
+            var ring = d as CircularProgressRing;
+            if (ring != null && ring.DayDurationDisplay != null)
+            {
+                ring.DayDurationDisplay.Text = (string)e.NewValue;
+                ring.SuperMiniDayDurationDisplay.Text = (string)e.NewValue;
+            }
+        }
+
         private Storyboard _glowPulseStoryboard;
 
         private static void OnRingBrushChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
@@ -247,6 +267,9 @@ namespace STStopwatch.Controls
                 CompletedSegmentsCanvas.Width = 190;
                 CompletedSegmentsCanvas.Height = 190;
                 ElapsedDisplay.FontSize = 22;
+                DayDurationDisplay.FontSize = 8;
+                DayDurationDisplay.Visibility = Visibility.Collapsed;
+                SuperMiniDayDurationDisplay.Visibility = Visibility.Visible;
                 SessionLabelBox.FontSize = 11;
                 SessionLabelBox.IsHitTestVisible = false;
                 SessionLabelBox.Focusable = false;
@@ -269,6 +292,9 @@ namespace STStopwatch.Controls
                 CompletedSegmentsCanvas.Width = 190;
                 CompletedSegmentsCanvas.Height = 190;
                 ElapsedDisplay.FontSize = 25;
+                DayDurationDisplay.FontSize = 10;
+                DayDurationDisplay.Visibility = Visibility.Visible;
+                SuperMiniDayDurationDisplay.Visibility = Visibility.Collapsed;
                 SessionLabelBox.FontSize = 12;
                 SessionLabelBox.IsHitTestVisible = true;
                 SessionLabelBox.Focusable = true;
@@ -293,6 +319,9 @@ namespace STStopwatch.Controls
                 CompletedSegmentsCanvas.Width = 280;
                 CompletedSegmentsCanvas.Height = 280;
                 ElapsedDisplay.FontSize = 40;
+                DayDurationDisplay.FontSize = 12;
+                DayDurationDisplay.Visibility = Visibility.Visible;
+                SuperMiniDayDurationDisplay.Visibility = Visibility.Collapsed;
                 SessionLabelBox.FontSize = 17;
                 SessionLabelBox.IsHitTestVisible = true;
                 SessionLabelBox.Focusable = true;

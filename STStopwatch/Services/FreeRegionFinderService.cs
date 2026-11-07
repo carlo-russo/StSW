@@ -381,25 +381,26 @@ namespace STStopwatch.Services
             double lowestClutterScore = double.MaxValue;
             Point bestPos = new Point(screenOriginX + maxPosX, screenOriginY + margin);
 
-            var candidates = new List<System.Drawing.Point>
+            // Keep every automatic placement in a narrow band at the screen/work-area
+            // perimeter. In particular, never consider interior rows or columns where
+            // the widget could land in the middle of the screen.
+            var candidates = new List<System.Drawing.Point>();
+            for (int x = margin; x <= maxPosX; x += stepX)
             {
-                new System.Drawing.Point(maxPosX, margin),                // Top Right
-                new System.Drawing.Point(maxPosX, maxPosY),               // Bottom Right
-                new System.Drawing.Point(margin, maxPosY),                // Bottom Left
-                new System.Drawing.Point(margin, margin),                 // Top Left
-                new System.Drawing.Point(maxPosX, maxPosY / 2),           // Mid Right Gutter
-                new System.Drawing.Point(margin, maxPosY / 2),            // Mid Left Gutter
-                new System.Drawing.Point(maxPosX / 2, maxPosY),           // Bottom Center Margin
-                new System.Drawing.Point(maxPosX / 2, margin)             // Top Center Margin
-            };
+                candidates.Add(new System.Drawing.Point(x, margin));
+                candidates.Add(new System.Drawing.Point(x, maxPosY));
+            }
 
             for (int y = margin; y <= maxPosY; y += stepY)
             {
-                for (int x = margin; x <= maxPosX; x += stepX)
-                {
-                    candidates.Add(new System.Drawing.Point(x, y));
-                }
+                candidates.Add(new System.Drawing.Point(margin, y));
+                candidates.Add(new System.Drawing.Point(maxPosX, y));
             }
+
+            // Include exact far endpoints when the stepping interval does not land on them.
+            candidates.Add(new System.Drawing.Point(maxPosX, margin));
+            candidates.Add(new System.Drawing.Point(maxPosX, maxPosY));
+            candidates.Add(new System.Drawing.Point(margin, maxPosY));
 
             BitmapData data = bmp.LockBits(
                 new Rectangle(0, 0, bmpWidth, bmpHeight),

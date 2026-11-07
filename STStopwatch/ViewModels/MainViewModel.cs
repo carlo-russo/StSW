@@ -32,6 +32,8 @@ namespace STStopwatch.ViewModels
         private bool _isAlwaysOnTop;
         private bool _isStatisticsOpen;
         private DateTime _sessionStartTime;
+        private DateTime _todayDurationDate;
+        private TimeSpan _todayRecordedDuration;
         private bool _targetNotificationFired;
 
         private ObservableCollection<RingSessionSegment> _completedSegments;
@@ -69,6 +71,7 @@ namespace STStopwatch.ViewModels
 
             _sessionLabelText = string.Format("Session {0:D2}", CurrentSessionNumber);
             _sessionStartTime = DateTime.Now;
+            RefreshTodayRecordedDuration();
 
             // Setup UI Dispatcher Timer (~30 FPS)
             _uiTimer = new DispatcherTimer(DispatcherPriority.Render);
@@ -178,6 +181,21 @@ namespace STStopwatch.ViewModels
             {
                 int hours = (int)_currentSessionElapsed.TotalHours;
                 return string.Format("{0:D2}:{1:D2}:{2:D2}", hours, _currentSessionElapsed.Minutes, _currentSessionElapsed.Seconds);
+            }
+        }
+
+        public string TodayTotalDurationText
+        {
+            get
+            {
+                TimeSpan total = _todayRecordedDuration;
+                if (_sessionStartTime.Date == DateTime.Today)
+                {
+                    total += _currentSessionElapsed;
+                }
+
+                int hours = (int)total.TotalHours;
+                return string.Format("{0:D2}:{1:D2}", hours, total.Minutes);
             }
         }
 
@@ -326,8 +344,13 @@ namespace STStopwatch.ViewModels
 
         private void UpdateTimerDisplay()
         {
+            if (_todayDurationDate != DateTime.Today)
+            {
+                RefreshTodayRecordedDuration();
+            }
             Elapsed = _timerEngine.Elapsed;
             OnPropertyChanged("TotalElapsed");
+            OnPropertyChanged("TodayTotalDurationText");
 
             double targetSeconds = TargetDuration.TotalSeconds;
             double totalSeconds = TotalElapsed.TotalSeconds;
@@ -548,7 +571,23 @@ namespace STStopwatch.ViewModels
                 record.ThemeColorHex = CurrentSession.ThemeColorHex;
 
                 _storageService.SaveRecord(record);
+                RefreshTodayRecordedDuration();
+                OnPropertyChanged("TodayTotalDurationText");
                 StatisticsVM.Refresh();
+            }
+        }
+
+        private void RefreshTodayRecordedDuration()
+        {
+            _todayDurationDate = DateTime.Today;
+            _todayRecordedDuration = TimeSpan.Zero;
+            var records = _storageService.LoadRecords();
+            for (int i = 0; i < records.Count; i++)
+            {
+                if (records[i].StartTime.Date == _todayDurationDate)
+                {
+                    _todayRecordedDuration += records[i].ElapsedDuration;
+                }
             }
         }
 

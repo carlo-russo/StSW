@@ -276,6 +276,7 @@
                                                    TargetDuration="{Binding TargetDuration, Mode=TwoWay}"
                                                    TargetFinishTime="{Binding TargetFinishTimeText}"
                                                    SessionLabel="{Binding SessionLabelText, Mode=TwoWay}"
+                                                   DayDurationText="{Binding TodayTotalDurationText}"
                                                    RingBrush="{Binding CurrentSessionColor}"
                                                    CompletedSegments="{Binding CompletedSegments}"
                                                    IsRunning="{Binding IsRunning}"

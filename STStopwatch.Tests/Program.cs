@@ -71,7 +71,7 @@ namespace STStopwatch.Tests
         static int Main(string[] args)
         {
             Console.WriteLine("==================================================");
-            Console.WriteLine("ST Stopwatch - Comprehensive Verification Test Suite");
+            Console.WriteLine("ST TimerQt - Comprehensive Verification Test Suite");
             Console.WriteLine("==================================================");
 
             TestTimerEngine();

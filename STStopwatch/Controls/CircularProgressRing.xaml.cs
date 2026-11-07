@@ -168,7 +168,11 @@ namespace STStopwatch.Controls
             {
                 TimeSpan ts = (TimeSpan)e.NewValue;
                 int hours = (int)ts.TotalHours;
-                ring.ElapsedDisplay.Text = string.Format("{0:D2}:{1:D2}:{2:D2}", hours, ts.Minutes, ts.Seconds);
+                ring.ElapsedHoursMinutesRun.Text = hours > 0
+                    ? string.Format("{0:D2}:{1:D2}:", hours, ts.Minutes)
+                    : string.Format("{0:D2}:", ts.Minutes);
+                ring.ElapsedSecondsRun.Text = string.Format("{0:D2}", ts.Seconds);
+                ring.ElapsedMillisecondsRun.Text = string.Format(".{0:D1}", ts.Milliseconds / 100);
                 ring.UpdateRingAndNode();
             }
         }
@@ -266,7 +270,7 @@ namespace STStopwatch.Controls
                 RingCanvas.Height = 190;
                 CompletedSegmentsCanvas.Width = 190;
                 CompletedSegmentsCanvas.Height = 190;
-                ElapsedDisplay.FontSize = 22;
+                ElapsedDisplay.FontSize = 23;
                 DayDurationDisplay.FontSize = 8;
                 DayDurationDisplay.Visibility = Visibility.Collapsed;
                 SuperMiniDayDurationDisplay.Visibility = Visibility.Visible;
@@ -339,7 +343,14 @@ namespace STStopwatch.Controls
                 UpdateColorsForTheme();
                 StopGlowPulse();
             }
+            ApplyElapsedMillisecondsStyle();
             UpdateLayoutGeometry();
+        }
+
+        private void ApplyElapsedMillisecondsStyle()
+        {
+            ElapsedMillisecondsRun.FontSize = ElapsedDisplay.FontSize * 0.55;
+            ElapsedMillisecondsRun.Foreground = new SolidColorBrush(Color.FromRgb(148, 163, 184));
         }
 
         private void UpdateColorsForTheme()

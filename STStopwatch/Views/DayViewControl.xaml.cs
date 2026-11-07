@@ -179,8 +179,7 @@ namespace STStopwatch.Views
             }
 
             string duration = string.Format("{0:D2}:{1:D2}", (int)total.TotalHours, total.Minutes);
-            DrawCenteredText(drawingContext, "DAY TOTAL", center, -10.0, Math.Max(8.0, size * 0.105), Color.FromRgb(100, 116, 139), FontWeights.SemiBold);
-            DrawCenteredText(drawingContext, duration, center, 7.0, Math.Max(10.0, size * 0.145), Color.FromRgb(17, 17, 17), FontWeights.Bold);
+            DrawCenteredText(drawingContext, duration, center, 0.0, Math.Max(10.0, size * 0.145), Color.FromRgb(17, 17, 17), FontWeights.Bold);
         }
 
         private static Color ParseColor(string colorText)

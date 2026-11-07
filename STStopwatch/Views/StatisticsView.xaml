@@ -33,12 +33,12 @@
                                Foreground="#111111"/>
                 </StackPanel>
 
-                <!-- Back to Stopwatch Button -->
+                <!-- Back to ST TimerQt Button -->
                 <Button Grid.Column="1"
                         Command="{Binding ToggleStatisticsCommand}"
                         Style="{StaticResource SmallPillButtonStyle}"
                         Padding="10,4"
-                        ToolTip="Return to Stopwatch">
+                        ToolTip="Return to ST TimerQt">
                     <StackPanel Orientation="Horizontal">
                         <TextBlock Text="✕ Close" FontFamily="Segoe UI" FontWeight="SemiBold" FontSize="11" Foreground="#111111"/>
                     </StackPanel>

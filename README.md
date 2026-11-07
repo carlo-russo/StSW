@@ -1,6 +1,6 @@
-# ST Stopwatch — C# Windows Desktop Application
+# ST TimerQt — C# Windows Desktop Application
 
-A lightweight, high-precision Windows desktop stopwatch application developed with **C# and WPF on .NET**, meticulously styled in accordance with the **StartToday Technologies** branding and design system.
+A lightweight, high-precision Windows desktop timer application developed with **C# and WPF on .NET**, styled in accordance with the **StartToday Technologies** branding and design system.
 
 ![StartToday Logo](STStopwatch/Assets/st_logo.png)
 
@@ -22,9 +22,9 @@ The application strictly reflects StartToday Technologies' visual reference:
 
 ---
 
-## 2. Stopwatch Interface & Features
+## 2. Timer Interface & Features
 
-### Single Stopwatch Interface
+### Single Timer Interface
 - **One Mode Only:** A clean circular stopwatch with an adjustable target duration.
 - **Circular Progress Ring:** Large outer ring displaying elapsed progress toward the configured target duration.
 - **Inside the Ring:**
@@ -116,7 +116,7 @@ Accessible via the header button (📊) in Normal Mode, providing persistent tra
 - **Always on Top (📌):** Pins the stopwatch floating window on top of code editors, IDEs, and browser windows.
 - **System Tray (`app.ico`):**
   - Left/Double-click to restore window.
-  - Right-click context menu: `Show Stopwatch`, `Minimal Mode`, `Always on Top`, `Exit`.
+  - Right-click context menu: `Show ST TimerQt`, `Minimal Mode`, `Always on Top`, `Exit`.
   - Target achievement balloon notification when session goal is completed.
 - **Local Persistence:** Automatically preserves window coordinates, mode states, active session number, custom target durations, and session logs in `%APPDATA%\StartToday\STStopwatch\`.
 
@@ -200,11 +200,11 @@ build.bat
 ### Running the Application
 Launch the compiled executable directly:
 ```cmd
-STStopwatch\bin\Release\STStopwatch.exe
+STStopwatch\bin\Release\STTimerQt.exe
 ```
 Or for debug mode:
 ```cmd
-STStopwatch\bin\Debug\STStopwatch.exe
+STStopwatch\bin\Debug\STTimerQt.exe
 ```
 
 ### Running Automated Tests
@@ -214,7 +214,7 @@ STStopwatch\bin\Debug\STStopwatch.exe
 Output:
 ```
 ==================================================
-ST Stopwatch - Comprehensive Verification Test Suite
+ST TimerQt - Comprehensive Verification Test Suite
 ==================================================
 --> Testing HighResolutionTimerEngine... [All Passed]
 --> Testing 12-Session Definitions and Colours... [All Passed]

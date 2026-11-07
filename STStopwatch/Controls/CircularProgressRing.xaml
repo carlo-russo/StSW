@@ -153,13 +153,17 @@
 
             <!-- Elapsed Time Display: Large Geometric Sans-Serif Tabular Numbers -->
             <TextBlock x:Name="ElapsedDisplay"
-                       Text="00:00:00"
                        FontFamily="Segoe UI"
+                       Typography.NumeralAlignment="Tabular"
                        FontWeight="Bold"
                        FontSize="40"
                        Foreground="#111111"
                        HorizontalAlignment="Center"
-                       IsHitTestVisible="False" />
+                       IsHitTestVisible="False">
+                <TextBlock.Inlines>
+                    <Run x:Name="ElapsedHoursMinutesRun" Text="00:"/><Run x:Name="ElapsedSecondsRun" Text="00"/><Run x:Name="ElapsedMillisecondsRun" Text=".0" FontWeight="SemiBold" Foreground="#94A3B8"/>
+                </TextBlock.Inlines>
+            </TextBlock>
 
             <TextBlock x:Name="SuperMiniDayDurationDisplay"
                        Text="00:00"

@@ -23,7 +23,7 @@ namespace STStopwatch.Services
             _onExit = onExit;
 
             _notifyIcon = new NotifyIcon();
-            _notifyIcon.Text = "ST Stopwatch";
+            _notifyIcon.Text = "ST TimerQt";
 
             // Load icon
             try
@@ -45,12 +45,12 @@ namespace STStopwatch.Services
 
             var contextMenu = new ContextMenu();
 
-            var titleItem = new MenuItem("ST Stopwatch");
+            var titleItem = new MenuItem("ST TimerQt");
             titleItem.Enabled = false;
             contextMenu.MenuItems.Add(titleItem);
             contextMenu.MenuItems.Add("-");
 
-            var restoreItem = new MenuItem("Show Stopwatch", delegate { if (_onRestore != null) _onRestore(); });
+            var restoreItem = new MenuItem("Show ST TimerQt", delegate { if (_onRestore != null) _onRestore(); });
             restoreItem.DefaultItem = true;
             contextMenu.MenuItems.Add(restoreItem);
 

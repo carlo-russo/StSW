@@ -1,9 +1,9 @@
 @echo off
 setlocal enabledelayedexpansion
-title ST Stopwatch - Build Script
+title ST TimerQt - Build Script
 
 echo ========================================================
-echo       ST Stopwatch - Build and Package Pipeline
+echo       ST TimerQt - Build and Package Pipeline
 echo          StartToday Technologies Desktop App
 echo ========================================================
 echo.
@@ -23,7 +23,7 @@ if errorlevel 1 (
     pause
     exit /b 1
 )
-echo [PASS] Release build succeeded: STStopwatch\bin\Release\STStopwatch.exe
+echo [PASS] Release build succeeded: STStopwatch\bin\Release\STTimerQt.exe
 echo.
 
 echo [2/3] Building Test suite...
@@ -47,7 +47,7 @@ if errorlevel 1 (
 echo.
 echo ========================================================
 echo [SUCCESS] Build & Verification Complete!
-echo Run the application at: STStopwatch\bin\Release\STStopwatch.exe
+echo Run the application at: STStopwatch\bin\Release\STTimerQt.exe
 echo ========================================================
 echo.
 

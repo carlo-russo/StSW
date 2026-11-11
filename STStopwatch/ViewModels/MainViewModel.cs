@@ -31,6 +31,7 @@ namespace STStopwatch.ViewModels
         private bool _isAutoFreeAreaEnabled;
         private bool _isAlwaysOnTop;
         private bool _isStatisticsOpen;
+        private bool _showGettingStarted;
         private DateTime _sessionStartTime;
         private DateTime _todayDurationDate;
         private TimeSpan _todayRecordedDuration;
@@ -54,6 +55,7 @@ namespace STStopwatch.ViewModels
             _isMinimalMode = settings.IsMinimalMode;
             _isSuperMinimalMode = settings.IsSuperMinimalMode;
             _isAutoFreeAreaEnabled = settings.IsAutoFreeAreaEnabled;
+            _showGettingStarted = !settings.HasDismissedGettingStarted;
 
             // Global constant target duration
             if (settings.GlobalTargetDurationSeconds >= 60.0)
@@ -90,11 +92,20 @@ namespace STStopwatch.ViewModels
             ToggleStatisticsCommand = new RelayCommand(ExecuteToggleStatistics);
             CloseCommand = new RelayCommand(ExecuteClose);
             SelectSessionCommand = new RelayCommand(ExecuteSelectSession);
+            DismissGettingStartedCommand = new RelayCommand(ExecuteDismissGettingStarted);
 
             UpdateTimerDisplay();
         }
 
         public StatisticsViewModel StatisticsVM { get; private set; }
+
+        public bool ShowGettingStarted
+        {
+            get { return _showGettingStarted; }
+            private set { SetProperty(ref _showGettingStarted, value, "ShowGettingStarted"); }
+        }
+
+        public ICommand DismissGettingStartedCommand { get; private set; }
 
         public SessionModel[] Sessions
         {
@@ -634,6 +645,14 @@ namespace STStopwatch.ViewModels
             }
         }
 
+        private void ExecuteDismissGettingStarted()
+        {
+            ShowGettingStarted = false;
+            var settings = _storageService.LoadSettings();
+            settings.HasDismissedGettingStarted = true;
+            _storageService.SaveSettings(settings);
+        }
+
         private void NotifyStateChanged()
         {
             OnPropertyChanged("IsRunning");
@@ -650,6 +669,7 @@ namespace STStopwatch.ViewModels
             settings.IsMinimalMode = IsMinimalMode;
             settings.IsSuperMinimalMode = IsSuperMinimalMode;
             settings.IsAutoFreeAreaEnabled = IsAutoFreeAreaEnabled;
+            settings.HasDismissedGettingStarted = !ShowGettingStarted;
             settings.GlobalTargetDurationSeconds = TargetDuration.TotalSeconds;
             settings.CustomSessionLabelTemplate = _sessionLabelText;
 

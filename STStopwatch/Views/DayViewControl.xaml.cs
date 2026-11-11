@@ -26,6 +26,68 @@ namespace STStopwatch.Views
             {
                 records[i].IsDayViewSelected = object.ReferenceEquals(records[i], selectedRecord);
             }
+
+            if (selectedRecord != null)
+            {
+                ScrollToRecord(selectedRecord);
+            }
+        }
+
+        private void OnRecordRowMouseLeftButtonDown(object sender, System.Windows.Input.MouseButtonEventArgs e)
+        {
+            var border = sender as FrameworkElement;
+            var record = border != null ? border.DataContext as SessionRecord : null;
+            if (record != null)
+            {
+                OnDayDurationSessionSelected(record);
+            }
+        }
+
+        private void ScrollToRecord(SessionRecord selectedRecord)
+        {
+            if (selectedRecord == null) return;
+
+            Dispatcher.BeginInvoke(System.Windows.Threading.DispatcherPriority.Loaded, new Action(() =>
+            {
+                try
+                {
+                    var container = RecordsItemsControl.ItemContainerGenerator.ContainerFromItem(selectedRecord) as FrameworkElement;
+                    if (container == null)
+                    {
+                        RecordsItemsControl.UpdateLayout();
+                        container = RecordsItemsControl.ItemContainerGenerator.ContainerFromItem(selectedRecord) as FrameworkElement;
+                    }
+
+                    if (container != null)
+                    {
+                        if (RecordsContentPanel != null && RecordsScrollViewer != null && RecordsScrollViewer.ViewportHeight > 0)
+                        {
+                            GeneralTransform transform = container.TransformToAncestor(RecordsContentPanel);
+                            Point pt = transform.Transform(new Point(0, 0));
+                            double targetOffset = pt.Y - (RecordsScrollViewer.ViewportHeight - container.ActualHeight) / 2.0;
+                            if (targetOffset < 0) targetOffset = 0;
+                            if (targetOffset > RecordsScrollViewer.ScrollableHeight) targetOffset = RecordsScrollViewer.ScrollableHeight;
+                            RecordsScrollViewer.ScrollToVerticalOffset(targetOffset);
+                        }
+
+                        container.BringIntoView();
+                    }
+                }
+                catch
+                {
+                    try
+                    {
+                        var container = RecordsItemsControl.ItemContainerGenerator.ContainerFromItem(selectedRecord) as FrameworkElement;
+                        if (container != null)
+                        {
+                            container.BringIntoView();
+                        }
+                    }
+                    catch
+                    {
+                    }
+                }
+            }));
         }
     }
 
@@ -57,27 +119,66 @@ namespace STStopwatch.Views
             double distance = Math.Sqrt(dx * dx + dy * dy);
 
             SessionRecord selected = null;
-            if (Math.Abs(distance - radius) <= stroke / 2.0 + 6.0)
+            if (Math.Abs(distance - radius) <= stroke / 2.0 + 8.0)
             {
                 double angle = (Math.Atan2(dy, dx) * 180.0 / Math.PI + 90.0 + 360.0) % 360.0;
-                double angularTolerance = (stroke / 2.0 + 3.0) / radius * 180.0 / Math.PI;
+                double angularTolerance = (stroke / 2.0 + 4.0) / radius * 180.0 / Math.PI;
                 IList<SessionRecord> records = Records;
-                if (records != null)
+                if (records != null && records.Count > 0)
                 {
-                    for (int i = 0; i < records.Count; i++)
+                    // Pass 1: Check for exact hit within the segment angle bounds (topmost drawn first)
+                    for (int i = records.Count - 1; i >= 0; i--)
                     {
                         SessionRecord record = records[i];
                         if (record == null || record.ElapsedSeconds <= 0) continue;
 
                         double startSeconds = record.StartTime.TimeOfDay.TotalSeconds;
                         double durationSeconds = Math.Min(record.ElapsedDuration.TotalSeconds, 24.0 * 60.0 * 60.0 - startSeconds);
+                        if (durationSeconds <= 0) continue;
+
                         double startAngle = startSeconds / (24.0 * 60.0 * 60.0) * 360.0;
                         double sweep = durationSeconds / (24.0 * 60.0 * 60.0) * 360.0;
                         double offset = (angle - startAngle + 360.0) % 360.0;
-                        if (durationSeconds > 0 && (offset <= sweep + angularTolerance || offset >= 360.0 - angularTolerance))
+
+                        if (offset >= 0.0 && offset <= sweep)
                         {
                             selected = record;
                             break;
+                        }
+                    }
+
+                    // Pass 2: If no exact hit, find the nearest segment within angularTolerance
+                    if (selected == null)
+                    {
+                        double bestDistance = double.MaxValue;
+                        for (int i = records.Count - 1; i >= 0; i--)
+                        {
+                            SessionRecord record = records[i];
+                            if (record == null || record.ElapsedSeconds <= 0) continue;
+
+                            double startSeconds = record.StartTime.TimeOfDay.TotalSeconds;
+                            double durationSeconds = Math.Min(record.ElapsedDuration.TotalSeconds, 24.0 * 60.0 * 60.0 - startSeconds);
+                            if (durationSeconds <= 0) continue;
+
+                            double startAngle = startSeconds / (24.0 * 60.0 * 60.0) * 360.0;
+                            double sweep = durationSeconds / (24.0 * 60.0 * 60.0) * 360.0;
+                            double offset = (angle - startAngle + 360.0) % 360.0;
+
+                            double dist;
+                            if (offset <= sweep)
+                            {
+                                dist = 0.0;
+                            }
+                            else
+                            {
+                                dist = Math.Min(offset - sweep, 360.0 - offset);
+                            }
+
+                            if (dist <= angularTolerance && dist < bestDistance)
+                            {
+                                bestDistance = dist;
+                                selected = record;
+                            }
                         }
                     }
                 }

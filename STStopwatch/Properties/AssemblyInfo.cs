@@ -2,11 +2,11 @@ using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Windows;
 
-[assembly: AssemblyTitle("ST TimerQt")]
+[assembly: AssemblyTitle("TimerQt")]
 [assembly: AssemblyDescription("Lightweight Windows Timer Application - StartToday Technologies")]
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("StartToday Technologies")]
-[assembly: AssemblyProduct("ST TimerQt")]
+[assembly: AssemblyProduct("TimerQt")]
 [assembly: AssemblyCopyright("Copyright © 2026 StartToday Technologies")]
 [assembly: AssemblyTrademark("StartToday")]
 [assembly: AssemblyCulture("")]

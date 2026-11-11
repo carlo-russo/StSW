@@ -38,6 +38,10 @@ namespace STStopwatch
 
                 // Restore window dimensions according to mode
                 ApplyWindowModeDimensions(vm.IsMinimalMode, vm.IsSuperMinimalMode);
+                if (vm.IsStatisticsOpen)
+                {
+                    ApplyStatisticsWindowWidth(true);
+                }
 
                 // Restore position
                 var storage = new JsonStorageService();
@@ -100,9 +104,33 @@ namespace STStopwatch
                     ApplyWindowModeDimensions(vm.IsMinimalMode, vm.IsSuperMinimalMode);
                 }
             }
+            if (e.PropertyName == "IsStatisticsOpen")
+            {
+                var vm = DataContext as MainViewModel;
+                if (vm != null && !vm.IsMinimalMode && !vm.IsSuperMinimalMode)
+                {
+                    ApplyStatisticsWindowWidth(vm.IsStatisticsOpen);
+                }
+            }
             if (e.PropertyName == "IsSuperMinimalMode" || e.PropertyName == "IsAutoFreeAreaEnabled")
             {
                 UpdateAutoFreeRegionWatcher();
+            }
+        }
+
+        private void ApplyStatisticsWindowWidth(bool isOpen)
+        {
+            if (isOpen)
+            {
+                MinWidth = 480;
+                MaxWidth = 520;
+                Width = 500;
+            }
+            else
+            {
+                MinWidth = 280;
+                MaxWidth = 380;
+                Width = 380;
             }
         }
 
@@ -122,13 +150,14 @@ namespace STStopwatch
                 Width = 200;
                 Height = 200;
 
-                WindowRootBorder.Margin = new Thickness(0);
+                WindowRootBorder.Margin = new Thickness(6);
                 WindowRootBorder.BorderThickness = new Thickness(0);
                 WindowRootBorder.Background = Brushes.Transparent;
                 WindowRootBorder.CornerRadius = new CornerRadius(100);
                 WindowRootBorder.Effect = null;
 
                 RingArea.Margin = new Thickness(0);
+                ProgressRing.Height = 190;
                 HeaderBar.Visibility = Visibility.Collapsed;
                 MinimalTopStrip.Visibility = Visibility.Collapsed;
                 ControlsBar.Visibility = Visibility.Collapsed;
@@ -138,16 +167,16 @@ namespace STStopwatch
             else if (isMinimal)
             {
                 MinWidth = 180;
-                MinHeight = 220;
+                MinHeight = 300;
                 MaxWidth = 202;
-                MaxHeight = 264;
+                MaxHeight = 300;
                 Width = 202;
-                Height = 264;
+                Height = 300;
 
-                WindowRootBorder.Margin = new Thickness(3);
-                WindowRootBorder.BorderThickness = new Thickness(1.5);
+                WindowRootBorder.Margin = new Thickness(6);
+                WindowRootBorder.BorderThickness = new Thickness(1);
                 WindowRootBorder.Background = Brushes.White;
-                WindowRootBorder.CornerRadius = new CornerRadius(8);
+                WindowRootBorder.CornerRadius = new CornerRadius(14);
                 WindowRootBorder.Effect = new DropShadowEffect
                 {
                     BlurRadius = 12,
@@ -157,11 +186,17 @@ namespace STStopwatch
                     Color = Colors.Black
                 };
 
-                RingArea.Margin = new Thickness(0, 1, 0, 1);
+                RingArea.Margin = new Thickness(0, 1, 0, 52);
+                ProgressRing.Height = 190;
                 HeaderBar.Visibility = Visibility.Collapsed;
                 MinimalTopStrip.Visibility = Visibility.Visible;
                 ControlsBar.Visibility = Visibility.Visible;
-                ControlsBar.Padding = new Thickness(4, 3, 4, 3);
+                ControlsBar.Padding = new Thickness(0);
+                ControlsBar.Margin = new Thickness(0, 0, 0, 4);
+                ButtonGrid.Width = 170;
+                ButtonGrid.Height = 60;
+                ButtonGrid.RowDefinitions[0].Height = new GridLength(30);
+                ButtonGrid.RowDefinitions[1].Height = new GridLength(30);
 
                 // Equal reduced sizes for all 3 buttons in minimized view
                 PlayPauseButton.Width = 44;
@@ -170,8 +205,6 @@ namespace STStopwatch
                 CompleteSessionButton.Height = 30;
                 NextSessionButton.Width = 44;
                 NextSessionButton.Height = 30;
-                ControlsColGap1.Width = new GridLength(8);
-                ControlsColGap2.Width = new GridLength(8);
                 ButtonGrid.LayoutTransform = Transform.Identity;
 
                 ProgressRing.ApplyModeStyles();
@@ -185,10 +218,10 @@ namespace STStopwatch
                 Width = 380;
                 Height = 530;
 
-                WindowRootBorder.Margin = new Thickness(10);
-                WindowRootBorder.BorderThickness = new Thickness(1.5);
+                WindowRootBorder.Margin = new Thickness(14);
+                WindowRootBorder.BorderThickness = new Thickness(1);
                 WindowRootBorder.Background = Brushes.White;
-                WindowRootBorder.CornerRadius = new CornerRadius(10);
+                WindowRootBorder.CornerRadius = new CornerRadius(16);
                 WindowRootBorder.Effect = new DropShadowEffect
                 {
                     BlurRadius = 16,
@@ -198,20 +231,24 @@ namespace STStopwatch
                     Color = Colors.Black
                 };
 
-                RingArea.Margin = new Thickness(16, 10, 16, 6);
+                RingArea.Margin = new Thickness(12, 8, 12, 4);
+                ProgressRing.Height = 300;
                 HeaderBar.Visibility = Visibility.Visible;
                 MinimalTopStrip.Visibility = Visibility.Collapsed;
                 ControlsBar.Visibility = Visibility.Visible;
-                ControlsBar.Padding = new Thickness(16, 12, 16, 12);
+                ControlsBar.Padding = new Thickness(0);
+                ControlsBar.Margin = new Thickness(0, 0, 0, 20);
+                ButtonGrid.Width = 300;
+                ButtonGrid.Height = 76;
+                ButtonGrid.RowDefinitions[0].Height = new GridLength(36);
+                ButtonGrid.RowDefinitions[1].Height = new GridLength(40);
 
-                PlayPauseButton.Width = 68;
-                PlayPauseButton.Height = 46;
-                CompleteSessionButton.Width = 88;
-                CompleteSessionButton.Height = 46;
-                NextSessionButton.Width = 68;
-                NextSessionButton.Height = 46;
-                ControlsColGap1.Width = new GridLength(14);
-                ControlsColGap2.Width = new GridLength(14);
+                PlayPauseButton.Width = 58;
+                PlayPauseButton.Height = 36;
+                CompleteSessionButton.Width = 60;
+                CompleteSessionButton.Height = 38;
+                NextSessionButton.Width = 58;
+                NextSessionButton.Height = 36;
                 ButtonGrid.LayoutTransform = Transform.Identity;
 
                 ProgressRing.ApplyModeStyles();

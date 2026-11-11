@@ -3,7 +3,7 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:controls="clr-namespace:STStopwatch.Controls"
         xmlns:views="clr-namespace:STStopwatch.Views"
-        Title="ST TimerQt"
+        Title="TimerQt"
         Icon="Assets/app.ico"
         WindowStyle="None"
         AllowsTransparency="True"
@@ -21,11 +21,11 @@
 
     <!-- Window Shell Card with Crisp StartToday Border & Shadow -->
     <Border x:Name="WindowRootBorder"
-            Background="#FFFFFF"
-            BorderBrush="#111111"
-            BorderThickness="1.5"
-            CornerRadius="10"
-            Margin="10">
+            Background="#F7FAFE"
+            BorderBrush="#B8CBE2"
+            BorderThickness="1"
+            CornerRadius="16"
+            Margin="14">
         <Border.ContextMenu>
             <ContextMenu>
                 <MenuItem Header="Auto-Find Free Screen Region"
@@ -45,7 +45,7 @@
                           IsCheckable="True"
                           IsChecked="{Binding IsAlwaysOnTop, Mode=TwoWay}"/>
                 <Separator/>
-                <MenuItem Header="Close ST TimerQt" Command="{Binding CloseCommand}"/>
+                <MenuItem Header="Close TimerQt" Command="{Binding CloseCommand}"/>
             </ContextMenu>
         </Border.ContextMenu>
         <Border.Effect>
@@ -61,15 +61,16 @@
                     <!-- Stopwatch Circular Interface -->
                     <RowDefinition Height="*"/>
                     <!-- 3 Essential Playback Controls (Icons Only) -->
-                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="0"/>
                 </Grid.RowDefinitions>
 
                 <!-- HEADER BAR (Hidden in Minimal and Super Minimal Mode) -->
                 <Border x:Name="HeaderBar" Grid.Row="0"
                         Background="#F0F4F8"
-                        BorderBrush="#111111"
-                        BorderThickness="0,0,0,1"
-                        Padding="12,8"
+                        CornerRadius="15,15,0,0"
+                        BorderBrush="#C7D5E6"
+                        BorderThickness="0,0,0,0.75"
+                        Padding="10,6"
                         Visibility="{Binding IsMinimalMode, Converter={StaticResource InverseBoolToVisibilityConverter}}">
                     <Grid>
                         <Grid.ColumnDefinitions>
@@ -79,12 +80,12 @@
                             <ColumnDefinition Width="Auto"/>
                         </Grid.ColumnDefinitions>
 
-                        <!-- ST Emblem Logo & Title -->
+                        <!-- StartToday Logo & product name -->
                         <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
                             <!-- ST Logo Emblem Badge -->
                             <Border Width="24" Height="24"
                                     Background="#0052FF"
-                                    BorderBrush="#111111"
+                                    BorderBrush="#C7D5E6"
                                     BorderThickness="1"
                                     CornerRadius="5"
                                     Margin="0,0,8,0">
@@ -92,6 +93,7 @@
                                            FontFamily="Georgia"
                                            FontWeight="Bold"
                                            FontStyle="Italic"
+
                                            FontSize="12"
                                            Foreground="#FFFFFF"
                                            HorizontalAlignment="Center"
@@ -99,10 +101,9 @@
                                            Margin="0,1,0,0"/>
                             </Border>
 
-                            <TextBlock Text="ST TimerQt"
-                                       FontFamily="Georgia"
-                                       FontWeight="Bold"
-                                       FontStyle="Italic"
+                            <TextBlock Text="TimerQt"
+                                       FontFamily="Segoe UI"
+                                       FontWeight="SemiBold"
                                        FontSize="15"
                                        Foreground="#111111"
                                        VerticalAlignment="Center"/>
@@ -189,7 +190,7 @@
                     <!-- ST Logo mini badge -->
                     <Border Width="18" Height="18"
                             Background="#0052FF"
-                            BorderBrush="#111111"
+                            BorderBrush="#C7D5E6"
                             BorderThickness="1"
                             CornerRadius="4"
                             HorizontalAlignment="Left">
@@ -197,6 +198,7 @@
                                    FontFamily="Georgia"
                                    FontWeight="Bold"
                                    FontStyle="Italic"
+
                                    FontSize="9"
                                    Foreground="#FFFFFF"
                                    HorizontalAlignment="Center"
@@ -242,7 +244,7 @@
                     <!-- Current Session Number Display (01 to 12 as the only additional session information) -->
                     <Border Grid.Row="0"
                             Background="#F0F4F8"
-                            BorderBrush="#111111"
+                            BorderBrush="#C7D5E6"
                             BorderThickness="1"
                             CornerRadius="12"
                             Padding="10,3"
@@ -270,6 +272,8 @@
                     <!-- Large Circular Progress Ring with Editable Session Label, Slices, and Target Finish Time -->
                     <controls:CircularProgressRing x:Name="ProgressRing"
                                                    Grid.Row="1"
+                                                   Height="300"
+                                                   VerticalAlignment="Top"
                                                    Progress="{Binding Progress}"
                                                    Elapsed="{Binding Elapsed}"
                                                    TotalElapsed="{Binding TotalElapsed}"
@@ -285,29 +289,30 @@
                 </Grid>
 
                 <!-- 3 CONTROLS (Row 2): Start/Pause on Left, Completed/End in Middle, Next on Right -->
-                <Border x:Name="ControlsBar" Grid.Row="2"
-                        Background="#FFFFFF"
-                        BorderBrush="#111111"
-                        BorderThickness="0,1,0,0"
-                        Padding="16,12">
-                    <Grid x:Name="ButtonGrid" HorizontalAlignment="Center">
+                <Border x:Name="ControlsBar" Grid.Row="1" Grid.RowSpan="2"
+                        VerticalAlignment="Bottom"
+                        Margin="0,0,0,20"
+                        Background="Transparent"
+                        BorderBrush="#C7D5E6"
+                        BorderThickness="0"
+                        Padding="0">
+                    <Grid x:Name="ButtonGrid" Width="300" Height="76" HorizontalAlignment="Center">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="36"/>
+                            <RowDefinition Height="40"/>
+                        </Grid.RowDefinitions>
                         <Grid.ColumnDefinitions>
-                            <!-- 1. Start / Pause / Resume (Left) -->
-                            <ColumnDefinition Width="Auto"/>
-                            <ColumnDefinition x:Name="ControlsColGap1" Width="14"/>
-                            <!-- 2. Completed / End (Middle) -->
-                            <ColumnDefinition Width="Auto"/>
-                            <ColumnDefinition x:Name="ControlsColGap2" Width="14"/>
-                            <!-- 3. Next Session (Right) -->
-                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="*"/>
                         </Grid.ColumnDefinitions>
 
                         <!-- 1. Start / Pause / Resume Button (Left) -->
                         <Button x:Name="PlayPauseButton"
-                                Grid.Column="0"
+                                Grid.Column="0" Grid.Row="0"
                                 Command="{Binding PlayPauseCommand}"
                                 Style="{StaticResource PrimaryActionButtonStyle}"
-                                Width="68" Height="46"
+                                Width="58" Height="36"
                                 ToolTip="{Binding PlayPauseButtonLabel}">
                             <Grid HorizontalAlignment="Center" VerticalAlignment="Center">
                                 <!-- Play Triangle Icon (Visible when stopped / paused) -->
@@ -338,13 +343,13 @@
 
                         <!-- 2. Completed / End Button (Middle) -->
                         <Button x:Name="CompleteSessionButton"
-                                Grid.Column="2"
+                                Grid.Column="1" Grid.Row="1"
                                 Command="{Binding CompleteSessionCommand}"
                                 Style="{StaticResource OutlineActionButtonStyle}"
-                                Width="88" Height="46"
+                                Width="60" Height="38"
                                 ToolTip="Complete / End Session Block">
                             <Path Data="M 3 8.5 L 7 12.5 L 16 3.5"
-                                  Stroke="#111111"
+                                  Stroke="#C45135"
                                   StrokeThickness="2.5"
                                   StrokeStartLineCap="Round"
                                   StrokeEndLineCap="Round"
@@ -357,10 +362,10 @@
 
                         <!-- 3. Next Session Button (Right) -->
                         <Button x:Name="NextSessionButton"
-                                Grid.Column="4"
+                                Grid.Column="2" Grid.Row="0"
                                 Command="{Binding NextSessionCommand}"
                                 Style="{StaticResource SecondaryActionButtonStyle}"
-                                Width="68" Height="46"
+                                Width="58" Height="36"
                                 ToolTip="Next Session (Continues automatically)">
                             <Grid Width="15" Height="15" HorizontalAlignment="Center" VerticalAlignment="Center">
                                 <Grid.ColumnDefinitions>
@@ -368,8 +373,8 @@
                                     <ColumnDefinition Width="2"/>
                                     <ColumnDefinition Width="3"/>
                                 </Grid.ColumnDefinitions>
-                                <Path Grid.Column="0" Data="M 0 0 L 10 7.5 L 0 15 Z" Fill="#111111" Stretch="Fill"/>
-                                <Rectangle Grid.Column="2" Fill="#111111" RadiusX="1" RadiusY="1"/>
+                                <Path Grid.Column="0" Data="M 0 0 L 10 7.5 L 0 15 Z" Fill="#087F70" Stretch="Fill"/>
+                                <Rectangle Grid.Column="2" Fill="#087F70" RadiusX="1" RadiusY="1"/>
                             </Grid>
                         </Button>
                     </Grid>
@@ -378,6 +383,43 @@
 
             <!-- Dedicated Statistics Section (Day View & Month View) -->
             <views:StatisticsView Visibility="{Binding IsStatisticsOpen, Converter={StaticResource BoolToVisibilityConverter}}"/>
+
+            <!-- First-run feature guide; dismissed once and remembered in settings. -->
+            <Border Panel.ZIndex="10"
+                    Margin="20"
+                    Padding="18"
+                    Background="#F2FFFFFF"
+                    BorderBrush="#A9C4E3"
+                    BorderThickness="1"
+                    CornerRadius="18"
+                    Visibility="{Binding ShowGettingStarted, Converter={StaticResource BoolToVisibilityConverter}}">
+                <Border.Effect>
+                    <DropShadowEffect BlurRadius="22" ShadowDepth="3" Direction="270" Opacity="0.14" Color="#31547A"/>
+                </Border.Effect>
+                <Grid VerticalAlignment="Center">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                    </Grid.RowDefinitions>
+                    <Button Grid.Row="0" HorizontalAlignment="Right" Content="✕"
+                            Command="{Binding DismissGettingStartedCommand}"
+                            Style="{StaticResource HeaderToolButtonStyle}"
+                            Width="26" Height="26" ToolTip="Dismiss guide"/>
+                    <TextBlock Grid.Row="1" Text="A quick guide" Margin="0,8,0,4"
+                               FontFamily="Segoe UI" FontSize="20" FontWeight="SemiBold"
+                               Foreground="#172B4D"/>
+                    <StackPanel Grid.Row="2" Margin="0,4,0,14">
+                        <TextBlock Text="Start or pause the timer with the blue button. Use the center check to finish a session, or the arrow to move on." TextWrapping="Wrap" Margin="0,4" Foreground="#43546B"/>
+                        <TextBlock Text="Drag the ring handle or use the mouse wheel to set a target. Click the session name to edit it." TextWrapping="Wrap" Margin="0,4" Foreground="#43546B"/>
+                        <TextBlock Text="Statistics, Always on Top, free-space positioning, and compact modes are available in the top bar. Hover any control for a hint." TextWrapping="Wrap" Margin="0,4" Foreground="#43546B"/>
+                    </StackPanel>
+                    <Button Grid.Row="3" Content="Got it" HorizontalAlignment="Right"
+                            Command="{Binding DismissGettingStartedCommand}"
+                            Style="{StaticResource PrimaryActionButtonStyle}" Padding="14,5"/>
+                </Grid>
+            </Border>
         </Grid>
     </Border>
 </Window>

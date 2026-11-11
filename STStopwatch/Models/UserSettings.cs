@@ -22,6 +22,9 @@ namespace STStopwatch.Models
         public bool IsAutoFreeAreaEnabled { get; set; }
 
         [DataMember]
+        public bool HasDismissedGettingStarted { get; set; }
+
+        [DataMember]
         public double WindowLeft { get; set; }
 
         [DataMember]
@@ -43,6 +46,7 @@ namespace STStopwatch.Models
             IsMinimalMode = false;
             IsSuperMinimalMode = false;
             IsAutoFreeAreaEnabled = false;
+            HasDismissedGettingStarted = false;
             WindowLeft = -1;
             WindowTop = -1;
             GlobalTargetDurationSeconds = 3600.0; // 1 hour default

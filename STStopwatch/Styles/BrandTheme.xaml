@@ -14,8 +14,8 @@
     <Color x:Key="BrandWhiteColor">#FFFFFF</Color>
     <Color x:Key="BrandPaleBlueColor">#F0F4F8</Color>
     <Color x:Key="BrandBorderBlackColor">#111111</Color>
-    <Color x:Key="BrandVividBlueColor">#0052FF</Color>
-    <Color x:Key="BrandVividBlueHoverColor">#0042D0</Color>
+    <Color x:Key="BrandVividBlueColor">#5B4CE2</Color>
+    <Color x:Key="BrandVividBlueHoverColor">#4838CB</Color>
     <Color x:Key="BrandTextPrimaryColor">#111111</Color>
     <Color x:Key="BrandTextSecondaryColor">#64748B</Color>
 
@@ -29,10 +29,11 @@
 
     <!-- Primary Action Button (Start/Pause/Resume) -->
     <Style x:Key="PrimaryActionButtonStyle" TargetType="Button">
-        <Setter Property="Background" Value="#0052FF"/>
+        <Setter Property="Background" Value="#5B4CE2"/>
         <Setter Property="Foreground" Value="#FFFFFF"/>
-        <Setter Property="BorderBrush" Value="#111111"/>
-        <Setter Property="BorderThickness" Value="1.5"/>
+        <Setter Property="BorderBrush" Value="#8E84F0"/>
+        <Setter Property="BorderThickness" Value="1"/>
+        <Setter Property="Padding" Value="2,1"/>
         <Setter Property="FontFamily" Value="Segoe UI"/>
         <Setter Property="FontWeight" Value="SemiBold"/>
         <Setter Property="FontSize" Value="14"/>
@@ -41,20 +42,27 @@
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="Button">
-                    <Border x:Name="border"
+                    <Border x:Name="border" RenderTransformOrigin="0.5,0.5"
                             Background="{TemplateBinding Background}"
                             BorderBrush="{TemplateBinding BorderBrush}"
                             BorderThickness="{TemplateBinding BorderThickness}"
-                            CornerRadius="6"
+                            CornerRadius="14"
                             Padding="{TemplateBinding Padding}">
+                        <Border.RenderTransform><ScaleTransform x:Name="buttonScale"/></Border.RenderTransform>
                         <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
                     </Border>
                     <ControlTemplate.Triggers>
                         <Trigger Property="IsMouseOver" Value="True">
-                            <Setter TargetName="border" Property="Background" Value="#0042D0"/>
+                            <Setter TargetName="border" Property="Background" Value="#4838CB"/>
+                            <Trigger.EnterActions>
+                                <BeginStoryboard><Storyboard><DoubleAnimation Storyboard.TargetName="buttonScale" Storyboard.TargetProperty="ScaleX" To="1.035" Duration="0:0:0.12"/><DoubleAnimation Storyboard.TargetName="buttonScale" Storyboard.TargetProperty="ScaleY" To="1.035" Duration="0:0:0.12"/></Storyboard></BeginStoryboard>
+                            </Trigger.EnterActions>
+                            <Trigger.ExitActions>
+                                <BeginStoryboard><Storyboard><DoubleAnimation Storyboard.TargetName="buttonScale" Storyboard.TargetProperty="ScaleX" To="1" Duration="0:0:0.16"/><DoubleAnimation Storyboard.TargetName="buttonScale" Storyboard.TargetProperty="ScaleY" To="1" Duration="0:0:0.16"/></Storyboard></BeginStoryboard>
+                            </Trigger.ExitActions>
                         </Trigger>
                         <Trigger Property="IsPressed" Value="True">
-                            <Setter TargetName="border" Property="Background" Value="#0035A8"/>
+                            <Setter TargetName="border" Property="Background" Value="#392AAE"/>
                         </Trigger>
                         <Trigger Property="IsEnabled" Value="False">
                             <Setter TargetName="border" Property="Opacity" Value="0.4"/>
@@ -67,10 +75,11 @@
 
     <!-- Secondary Action Button (Next Session) -->
     <Style x:Key="SecondaryActionButtonStyle" TargetType="Button">
-        <Setter Property="Background" Value="#F0F4F8"/>
-        <Setter Property="Foreground" Value="#111111"/>
-        <Setter Property="BorderBrush" Value="#111111"/>
-        <Setter Property="BorderThickness" Value="1.5"/>
+        <Setter Property="Background" Value="#DFF8F2"/>
+        <Setter Property="Foreground" Value="#087F70"/>
+        <Setter Property="BorderBrush" Value="#73D8C1"/>
+        <Setter Property="BorderThickness" Value="1"/>
+        <Setter Property="Padding" Value="2,1"/>
         <Setter Property="FontFamily" Value="Segoe UI"/>
         <Setter Property="FontWeight" Value="SemiBold"/>
         <Setter Property="FontSize" Value="13"/>
@@ -83,16 +92,16 @@
                             Background="{TemplateBinding Background}"
                             BorderBrush="{TemplateBinding BorderBrush}"
                             BorderThickness="{TemplateBinding BorderThickness}"
-                            CornerRadius="6"
+                            CornerRadius="14"
                             Padding="{TemplateBinding Padding}">
                         <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
                     </Border>
                     <ControlTemplate.Triggers>
                         <Trigger Property="IsMouseOver" Value="True">
-                            <Setter TargetName="border" Property="Background" Value="#E2E8F0"/>
+                            <Setter TargetName="border" Property="Background" Value="#C8F1E8"/>
                         </Trigger>
                         <Trigger Property="IsPressed" Value="True">
-                            <Setter TargetName="border" Property="Background" Value="#CBD5E1"/>
+                            <Setter TargetName="border" Property="Background" Value="#A8E7D9"/>
                         </Trigger>
                         <Trigger Property="IsEnabled" Value="False">
                             <Setter TargetName="border" Property="Opacity" Value="0.4"/>
@@ -105,10 +114,11 @@
 
     <!-- Neutral Outline Button (Reset) -->
     <Style x:Key="OutlineActionButtonStyle" TargetType="Button">
-        <Setter Property="Background" Value="#FFFFFF"/>
-        <Setter Property="Foreground" Value="#111111"/>
-        <Setter Property="BorderBrush" Value="#111111"/>
-        <Setter Property="BorderThickness" Value="1.5"/>
+        <Setter Property="Background" Value="#FFF0E9"/>
+        <Setter Property="Foreground" Value="#C45135"/>
+        <Setter Property="BorderBrush" Value="#F3AE94"/>
+        <Setter Property="BorderThickness" Value="1"/>
+        <Setter Property="Padding" Value="2,1"/>
         <Setter Property="FontFamily" Value="Segoe UI"/>
         <Setter Property="FontWeight" Value="SemiBold"/>
         <Setter Property="FontSize" Value="13"/>
@@ -121,16 +131,16 @@
                             Background="{TemplateBinding Background}"
                             BorderBrush="{TemplateBinding BorderBrush}"
                             BorderThickness="{TemplateBinding BorderThickness}"
-                            CornerRadius="6"
+                            CornerRadius="14"
                             Padding="{TemplateBinding Padding}">
                         <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
                     </Border>
                     <ControlTemplate.Triggers>
                         <Trigger Property="IsMouseOver" Value="True">
-                            <Setter TargetName="border" Property="Background" Value="#F8FAFC"/>
+                            <Setter TargetName="border" Property="Background" Value="#FFE2D5"/>
                         </Trigger>
                         <Trigger Property="IsPressed" Value="True">
-                            <Setter TargetName="border" Property="Background" Value="#F1F5F9"/>
+                            <Setter TargetName="border" Property="Background" Value="#FFD2C0"/>
                         </Trigger>
                         <Trigger Property="IsEnabled" Value="False">
                             <Setter TargetName="border" Property="Opacity" Value="0.4"/>
@@ -144,7 +154,7 @@
     <!-- Header Tool Button -->
     <Style x:Key="HeaderToolButtonStyle" TargetType="Button">
         <Setter Property="Background" Value="Transparent"/>
-        <Setter Property="BorderBrush" Value="#111111"/>
+        <Setter Property="BorderBrush" Value="#C7D5E6"/>
         <Setter Property="BorderThickness" Value="1"/>
         <Setter Property="Cursor" Value="Hand"/>
         <Setter Property="Width" Value="28"/>
@@ -194,7 +204,7 @@
                     <ControlTemplate.Triggers>
                         <Trigger Property="IsChecked" Value="True">
                             <Setter TargetName="border" Property="Background" Value="#FFFFFF"/>
-                            <Setter TargetName="border" Property="BorderBrush" Value="#111111"/>
+                            <Setter TargetName="border" Property="BorderBrush" Value="#C7D5E6"/>
                             <Setter Property="Foreground" Value="#111111"/>
                         </Trigger>
                         <Trigger Property="IsMouseOver" Value="True">
@@ -210,7 +220,7 @@
     <Style x:Key="SmallPillButtonStyle" TargetType="Button">
         <Setter Property="Background" Value="#FFFFFF"/>
         <Setter Property="Foreground" Value="#111111"/>
-        <Setter Property="BorderBrush" Value="#111111"/>
+        <Setter Property="BorderBrush" Value="#C7D5E6"/>
         <Setter Property="BorderThickness" Value="1"/>
         <Setter Property="FontFamily" Value="Segoe UI"/>
         <Setter Property="FontWeight" Value="SemiBold"/>

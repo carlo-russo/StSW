@@ -1,15 +1,15 @@
-﻿STStopwatch
+﻿STTimerQt
 
 
 winexe
 C#
 .cs
-c:\Users\sekoz\StartToday\STStopwatch\obj\Debug\
+C:\Users\sekoz\StartToday\STStopwatch\obj\Debug\
 STStopwatch
 none
 false
 DEBUG;TRACE
-c:\Users\sekoz\StartToday\STStopwatch\App.xaml
+C:\Users\sekoz\StartToday\STStopwatch\App.xaml
 6-693513411
 1-1061334507
 241253393515

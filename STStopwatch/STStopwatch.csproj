@@ -49,6 +49,12 @@
     <Reference Include="PresentationFramework" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\STStopwatch.Core\STStopwatch.Core.csproj">
+      <Project>{A5A68111-2D11-4DD7-B7F0-BA55C2C7B7F9}</Project>
+      <Name>STStopwatch.Core</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
     <ApplicationDefinition Include="App.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
@@ -86,26 +92,12 @@
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="Common\Converters.cs" />
-    <Compile Include="Common\ObservableObject.cs" />
-    <Compile Include="Common\RelayCommand.cs" />
     <Compile Include="Controls\CircularProgressRing.xaml.cs">
       <DependentUpon>CircularProgressRing.xaml</DependentUpon>
     </Compile>
-    <Compile Include="Models\RingSessionSegment.cs" />
-    <Compile Include="Models\SessionModel.cs" />
-    <Compile Include="Models\SessionRecord.cs" />
-    <Compile Include="Models\StatisticsModels.cs" />
-    <Compile Include="Models\UserSettings.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Services\HighResolutionTimerEngine.cs" />
-    <Compile Include="Services\IStorageService.cs" />
-    <Compile Include="Services\ITimerEngine.cs" />
-    <Compile Include="Services\ITrayService.cs" />
-    <Compile Include="Services\JsonStorageService.cs" />
     <Compile Include="Services\FreeRegionFinderService.cs" />
     <Compile Include="Services\TrayService.cs" />
-    <Compile Include="ViewModels\MainViewModel.cs" />
-    <Compile Include="ViewModels\StatisticsViewModel.cs" />
     <Compile Include="Views\DayViewControl.xaml.cs">
       <DependentUpon>DayViewControl.xaml</DependentUpon>
     </Compile>

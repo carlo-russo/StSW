@@ -1,6 +1,6 @@
 using System.Windows;
 using System.Windows.Controls;
-using STStopwatch.ViewModels;
+using STStopwatch.Core.ViewModels;
 
 namespace STStopwatch.Views
 {

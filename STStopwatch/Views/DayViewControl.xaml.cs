@@ -4,7 +4,7 @@ using System.Globalization;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
-using STStopwatch.Models;
+using STStopwatch.Core.Models;
 
 namespace STStopwatch.Views
 {
@@ -18,7 +18,7 @@ namespace STStopwatch.Views
 
         private void OnDayDurationSessionSelected(SessionRecord selectedRecord)
         {
-            var viewModel = DataContext as STStopwatch.ViewModels.StatisticsViewModel;
+            var viewModel = DataContext as STStopwatch.Core.ViewModels.StatisticsViewModel;
             if (viewModel == null || viewModel.DaySummary == null) return;
 
             IList<SessionRecord> records = viewModel.DaySummary.Records;

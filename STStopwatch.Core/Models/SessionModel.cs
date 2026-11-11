@@ -1,22 +1,19 @@
 using System;
-using System.Windows.Media;
-using STStopwatch.Common;
+using STStopwatch.Core.Common;
 
-namespace STStopwatch.Models
+namespace STStopwatch.Core.Models
 {
     public class SessionModel : ObservableObject
     {
         private int _sessionNumber;
         private string _themeColorHex;
         private TimeSpan _targetDuration;
-        private SolidColorBrush _themeBrush;
 
         public SessionModel(int sessionNumber, string themeColorHex, TimeSpan defaultTarget)
         {
             _sessionNumber = sessionNumber;
             _themeColorHex = themeColorHex;
             _targetDuration = defaultTarget;
-            UpdateBrush();
         }
 
         public int SessionNumber
@@ -45,42 +42,13 @@ namespace STStopwatch.Models
         public string ThemeColorHex
         {
             get { return _themeColorHex; }
-            set
-            {
-                if (SetProperty(ref _themeColorHex, value, "ThemeColorHex"))
-                {
-                    UpdateBrush();
-                }
-            }
-        }
-
-        public SolidColorBrush ThemeBrush
-        {
-            get { return _themeBrush; }
-            private set { SetProperty(ref _themeBrush, value, "ThemeBrush"); }
+            set { SetProperty(ref _themeColorHex, value, "ThemeColorHex"); }
         }
 
         public TimeSpan TargetDuration
         {
             get { return _targetDuration; }
             set { SetProperty(ref _targetDuration, value, "TargetDuration"); }
-        }
-
-        private void UpdateBrush()
-        {
-            try
-            {
-                var color = (Color)ColorConverter.ConvertFromString(_themeColorHex);
-                var brush = new SolidColorBrush(color);
-                brush.Freeze();
-                ThemeBrush = brush;
-            }
-            catch
-            {
-                var brush = new SolidColorBrush(Color.FromRgb(0, 82, 255));
-                brush.Freeze();
-                ThemeBrush = brush;
-            }
         }
 
         public static SessionModel[] CreateDefault12Sessions()

@@ -1,7 +1,7 @@
 using System;
 using System.Diagnostics;
 
-namespace STStopwatch.Services
+namespace STStopwatch.Core.Services
 {
     public class HighResolutionTimerEngine : ITimerEngine
     {

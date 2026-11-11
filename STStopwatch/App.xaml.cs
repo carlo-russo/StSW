@@ -1,7 +1,8 @@
 using System;
 using System.Windows;
+using STStopwatch.Core.Services;
+using STStopwatch.Core.ViewModels;
 using STStopwatch.Services;
-using STStopwatch.ViewModels;
 
 namespace STStopwatch
 {

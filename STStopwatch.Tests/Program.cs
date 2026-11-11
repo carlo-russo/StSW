@@ -2,10 +2,9 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Threading;
-using STStopwatch.Controls;
-using STStopwatch.Models;
-using STStopwatch.Services;
-using STStopwatch.ViewModels;
+using STStopwatch.Core.Models;
+using STStopwatch.Core.Services;
+using STStopwatch.Core.ViewModels;
 
 namespace STStopwatch.Tests
 {
@@ -80,7 +79,7 @@ namespace STStopwatch.Tests
             TestMainViewModelLifecycleAndControls();
             TestStatisticsDayAndMonthViews();
             TestTargetDurationAdjustment();
-            TestRevolutionAndNodeDraggableBehavior();
+            TestProgressRatioMath();
             TestEditableSessionTextAndConstantDurationAndAutoContinue();
 
             Console.WriteLine("\n--------------------------------------------------");
@@ -348,37 +347,21 @@ namespace STStopwatch.Tests
             Assert(vm.FormattedTarget == "00:45:00", "Formatted target displays 00:45:00");
         }
 
-        static void TestRevolutionAndNodeDraggableBehavior()
+        static void TestProgressRatioMath()
         {
-            Console.WriteLine("\n--> Testing Full Revolution and Node Draggable State...");
-            var ring = new CircularProgressRing();
-
-            ring.IsRunning = false;
-            ring.Elapsed = TimeSpan.Zero;
-            ring.TotalElapsed = TimeSpan.Zero;
-            ring.TargetDuration = TimeSpan.FromHours(2);
-
-            Assert(ring.IsAtBeginning == true, "Node is in setting mode at the beginning");
-
-            ring.IsRunning = true;
-            Assert(ring.IsAtBeginning == false, "Node is locked (not draggable) once running");
-
-            ring.IsRunning = false;
-            ring.Elapsed = TimeSpan.FromMinutes(30);
-            ring.TotalElapsed = TimeSpan.FromMinutes(30);
-            Assert(ring.IsAtBeginning == false, "Node remains locked (not draggable) while paused during session");
-
-            ring.Elapsed = TimeSpan.Zero;
-            ring.TotalElapsed = TimeSpan.Zero;
-            ring.IsRunning = false;
-            Assert(ring.IsAtBeginning == true, "Node unlocks and becomes draggable again after reset");
-
+            Console.WriteLine("\n--> Testing Core Progress Ratio Math...");
             TimeSpan target = TimeSpan.FromHours(2);
             TimeSpan halfElapsed = TimeSpan.FromHours(1);
             TimeSpan fullElapsed = TimeSpan.FromHours(2);
 
             double halfRatio = halfElapsed.TotalSeconds / target.TotalSeconds;
             double halfAngle = halfRatio * 360.0;
+            Assert(RingProgressState.IsAtBeginning(false, TimeSpan.Zero, 0), "Node is in setting mode at the beginning");
+            Assert(!RingProgressState.IsAtBeginning(true, TimeSpan.Zero, 0), "Node is locked once running");
+            Assert(!RingProgressState.IsAtBeginning(false, TimeSpan.FromMinutes(30), 0), "Node remains locked while paused during a session");
+            Assert(!RingProgressState.IsAtBeginning(false, TimeSpan.Zero, 1), "Node stays locked while completed segments remain");
+            Assert(RingProgressState.IsAtBeginning(false, TimeSpan.Zero, 0), "Node unlocks after reset");
+
             Assert(Math.Abs(halfAngle - 180.0) < 0.001, "50% elapsed matches half revolution (180 deg)");
 
             double fullRatio = fullElapsed.TotalSeconds / target.TotalSeconds;

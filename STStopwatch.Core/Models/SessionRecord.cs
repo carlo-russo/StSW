@@ -2,7 +2,7 @@ using System;
 using System.ComponentModel;
 using System.Runtime.Serialization;
 
-namespace STStopwatch.Models
+namespace STStopwatch.Core.Models
 {
     [DataContract]
     public class SessionRecord : INotifyPropertyChanged

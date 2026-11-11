@@ -45,9 +45,9 @@
     <Reference Include="PresentationFramework" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\STStopwatch\STStopwatch.csproj">
-      <Project>{47E69B1D-66EA-43BC-9D11-6DF3BA301F82}</Project>
-      <Name>STStopwatch</Name>
+    <ProjectReference Include="..\STStopwatch.Core\STStopwatch.Core.csproj">
+      <Project>{A5A68111-2D11-4DD7-B7F0-BA55C2C7B7F9}</Project>
+      <Name>STStopwatch.Core</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>

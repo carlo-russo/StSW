@@ -1,0 +1,5 @@
+C:\Users\sekoz\StartToday\STStopwatch.Core\obj\Release\STStopwatch.Core.csprojResolveAssemblyReference.cache
+C:\Users\sekoz\StartToday\STStopwatch.Core\bin\Release\STStopwatch.Core.dll
+C:\Users\sekoz\StartToday\STStopwatch.Core\bin\Release\STStopwatch.Core.pdb
+C:\Users\sekoz\StartToday\STStopwatch.Core\obj\Release\STStopwatch.Core.dll
+C:\Users\sekoz\StartToday\STStopwatch.Core\obj\Release\STStopwatch.Core.pdb

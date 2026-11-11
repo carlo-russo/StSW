@@ -1,7 +1,7 @@
 using System;
 using System.ComponentModel;
 
-namespace STStopwatch.Common
+namespace STStopwatch.Core.Common
 {
     public abstract class ObservableObject : INotifyPropertyChanged
     {

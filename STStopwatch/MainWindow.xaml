@@ -33,10 +33,10 @@
                           IsChecked="{Binding IsAutoFreeAreaEnabled, Mode=TwoWay}"
                           ToolTip="Automatically moves super minimized circle to the most free, uncluttered area"/>
                 <Separator/>
-                <MenuItem Header="Exit Super Minimized (Shift+Click)"
+                <MenuItem Header="Exit Super Minimized (Ctrl+Click)"
                           Command="{Binding ToggleSuperMinimalModeCommand}"
                           Visibility="{Binding IsSuperMinimalMode, Converter={StaticResource BoolToVisibilityConverter}}"/>
-                <MenuItem Header="Super Minimized Mode (Shift+Click)"
+                <MenuItem Header="Super Minimized Mode (Ctrl+Click)"
                           Command="{Binding ToggleSuperMinimalModeCommand}"
                           Visibility="{Binding IsSuperMinimalMode, Converter={StaticResource InverseBoolToVisibilityConverter}}"/>
                 <MenuItem Header="Minimal Mode"
@@ -136,21 +136,12 @@
                                 <TextBlock Text="📌" FontSize="10" Foreground="{Binding Path=Foreground, RelativeSource={RelativeSource AncestorType=Button}}"/>
                             </Button>
 
-                            <!-- Auto Free Region Toggle Button (Settings) -->
-                            <Button Command="{Binding ToggleAutoFreeAreaCommand}"
+                            <!-- Settings -->
+                            <Button Command="{Binding ToggleSettingsCommand}"
+                                    Style="{StaticResource HeaderToolButtonStyle}"
                                     Margin="0,0,4,0"
-                                    ToolTip="Auto-Position to Free Screen Region (Super Minimized)">
-                                <Button.Style>
-                                    <Style TargetType="Button" BasedOn="{StaticResource HeaderToolButtonStyle}">
-                                        <Style.Triggers>
-                                            <DataTrigger Binding="{Binding IsAutoFreeAreaEnabled}" Value="True">
-                                                <Setter Property="Background" Value="#0052FF"/>
-                                                <Setter Property="Foreground" Value="#FFFFFF"/>
-                                            </DataTrigger>
-                                        </Style.Triggers>
-                                    </Style>
-                                </Button.Style>
-                                <TextBlock Text="🎯" FontSize="11" Foreground="{Binding Path=Foreground, RelativeSource={RelativeSource AncestorType=Button}}"/>
+                                    ToolTip="Settings">
+                                <TextBlock Text="&#xE713;" FontFamily="Segoe MDL2 Assets" FontSize="15" Foreground="#111111"/>
                             </Button>
 
                             <!-- Minimal Mode Toggle Button -->
@@ -210,7 +201,7 @@
                         <Button Command="{Binding ToggleSuperMinimalModeCommand}"
                                 Style="{StaticResource HeaderToolButtonStyle}"
                                 Width="20" Height="20" Margin="0,0,4,0"
-                                ToolTip="Super Minimized View (Shift+Click anywhere)">
+                                ToolTip="Super Minimized View (Ctrl+Click anywhere)">
                             <TextBlock Text="⊙" FontSize="11" FontWeight="Bold" Foreground="#111111"/>
                         </Button>
 
@@ -254,7 +245,7 @@
                         <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
                             <!-- Colored dot matching current session -->
                             <Ellipse Width="8" Height="8"
-                                     Fill="{Binding CurrentSessionColor}"
+                                     Fill="{Binding CurrentSessionColorHex, Converter={StaticResource HexToBrushConverter}}"
                                      Margin="0,0,6,0"/>
                             <TextBlock Text="SESSION "
                                        FontFamily="Segoe UI"
@@ -281,7 +272,7 @@
                                                    TargetFinishTime="{Binding TargetFinishTimeText}"
                                                    SessionLabel="{Binding SessionLabelText, Mode=TwoWay}"
                                                    DayDurationText="{Binding TodayTotalDurationText}"
-                                                   RingBrush="{Binding CurrentSessionColor}"
+                                                   RingBrush="{Binding CurrentSessionColorHex, Converter={StaticResource HexToBrushConverter}}"
                                                    CompletedSegments="{Binding CompletedSegments}"
                                                    IsRunning="{Binding IsRunning}"
                                                    IsMinimalMode="{Binding IsMinimalMode}"
@@ -291,7 +282,7 @@
                 <!-- 3 CONTROLS (Row 2): Start/Pause on Left, Completed/End in Middle, Next on Right -->
                 <Border x:Name="ControlsBar" Grid.Row="1" Grid.RowSpan="2"
                         VerticalAlignment="Bottom"
-                        Margin="0,0,0,20"
+                        Margin="0,0,0,76"
                         Background="Transparent"
                         BorderBrush="#C7D5E6"
                         BorderThickness="0"
@@ -383,6 +374,26 @@
 
             <!-- Dedicated Statistics Section (Day View & Month View) -->
             <views:StatisticsView Visibility="{Binding IsStatisticsOpen, Converter={StaticResource BoolToVisibilityConverter}}"/>
+
+            <Border x:Name="SettingsPanel" Panel.ZIndex="5" Margin="24" Padding="22"
+                    Background="#F7FAFE" BorderBrush="#C7D5E6" BorderThickness="1" CornerRadius="14"
+                    Visibility="{Binding IsSettingsOpen, Converter={StaticResource BoolToVisibilityConverter}}">
+                <StackPanel VerticalAlignment="Top">
+                    <DockPanel Margin="0,0,0,18">
+                        <Button DockPanel.Dock="Right" Content="✕" Foreground="#111111" Command="{Binding ToggleSettingsCommand}"
+                                Style="{StaticResource HeaderToolButtonStyle}" Width="28" Height="28" ToolTip="Close settings"/>
+                        <TextBlock Text="Settings" FontSize="20" FontWeight="SemiBold" Foreground="#172B4D" VerticalAlignment="Center"/>
+                    </DockPanel>
+                    <CheckBox Content="Dark mode" IsChecked="{Binding IsDarkMode, Mode=TwoWay}"
+                              Style="{StaticResource SettingsToggleStyle}" Margin="0,0,0,18"/>
+                    <CheckBox Content="Always start in super-minimized view"
+                              IsChecked="{Binding StartInSuperMinimalMode, Mode=TwoWay}"
+                              Style="{StaticResource SettingsToggleStyle}" Margin="0,0,0,18"/>
+                    <CheckBox Content="Automatically find a free screen area in super-minimized mode"
+                              IsChecked="{Binding IsAutoFreeAreaEnabled, Mode=TwoWay}"
+                              Style="{StaticResource SettingsToggleStyle}"/>
+                </StackPanel>
+            </Border>
 
             <!-- First-run feature guide; dismissed once and remembered in settings. -->
             <Border Panel.ZIndex="10"

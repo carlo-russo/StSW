@@ -1,7 +1,7 @@
 using System.Collections.Generic;
-using STStopwatch.Models;
+using STStopwatch.Core.Models;
 
-namespace STStopwatch.Services
+namespace STStopwatch.Core.Services
 {
     public interface IStorageService
     {

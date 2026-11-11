@@ -1,7 +1,7 @@
 using System;
 using System.Windows.Input;
 
-namespace STStopwatch.Common
+namespace STStopwatch.Core.Common
 {
     public class RelayCommand : ICommand
     {

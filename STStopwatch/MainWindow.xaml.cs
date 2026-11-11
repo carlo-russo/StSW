@@ -8,8 +8,9 @@ using System.Windows.Media;
 using System.Windows.Media.Animation;
 using System.Windows.Media.Effects;
 using System.Windows.Threading;
+using STStopwatch.Core.Services;
+using STStopwatch.Core.ViewModels;
 using STStopwatch.Services;
-using STStopwatch.ViewModels;
 using Point = System.Windows.Point;
 
 namespace STStopwatch
@@ -38,10 +39,12 @@ namespace STStopwatch
 
                 // Restore window dimensions according to mode
                 ApplyWindowModeDimensions(vm.IsMinimalMode, vm.IsSuperMinimalMode);
+                ApplyTheme(vm.ThemeName);
                 if (vm.IsStatisticsOpen)
                 {
                     ApplyStatisticsWindowWidth(true);
                 }
+                else if (vm.IsSettingsOpen) ApplyStatisticsWindowWidth(true);
 
                 // Restore position
                 var storage = new JsonStorageService();
@@ -102,6 +105,7 @@ namespace STStopwatch
                 if (vm != null)
                 {
                     ApplyWindowModeDimensions(vm.IsMinimalMode, vm.IsSuperMinimalMode);
+                    ApplyTheme(vm.ThemeName);
                 }
             }
             if (e.PropertyName == "IsStatisticsOpen")
@@ -110,12 +114,193 @@ namespace STStopwatch
                 if (vm != null && !vm.IsMinimalMode && !vm.IsSuperMinimalMode)
                 {
                     ApplyStatisticsWindowWidth(vm.IsStatisticsOpen);
+                    ApplyTheme(vm.ThemeName);
                 }
+            }
+            if (e.PropertyName == "IsSettingsOpen")
+            {
+                var vm = DataContext as MainViewModel;
+                if (vm != null && !vm.IsMinimalMode && !vm.IsSuperMinimalMode)
+                {
+                    ApplyStatisticsWindowWidth(vm.IsSettingsOpen || vm.IsStatisticsOpen);
+                    ApplyTheme(vm.ThemeName);
+                }
+            }
+            if (e.PropertyName == "ThemeName")
+            {
+                var vm = DataContext as MainViewModel;
+                if (vm != null) ApplyTheme(vm.ThemeName);
             }
             if (e.PropertyName == "IsSuperMinimalMode" || e.PropertyName == "IsAutoFreeAreaEnabled")
             {
                 UpdateAutoFreeRegionWatcher();
             }
+        }
+
+        private void ApplyTheme(string themeName)
+        {
+            var settingsPanel = FindName("SettingsPanel") as System.Windows.Controls.Border;
+            bool dark = string.Equals(themeName, "Dark", StringComparison.OrdinalIgnoreCase);
+            var vm = DataContext as MainViewModel;
+            WindowRootBorder.Background = dark ? BrushFromRgb(31, 36, 48) :
+                (vm != null && vm.IsSuperMinimalMode ? Brushes.Transparent : (vm != null && vm.IsMinimalMode ? Brushes.White : BrushFromRgb(247, 250, 254)));
+            WindowRootBorder.BorderBrush = dark ? BrushFromRgb(70, 80, 99) : BrushFromRgb(184, 203, 226);
+            HeaderBar.Background = dark ? BrushFromRgb(40, 47, 62) : BrushFromRgb(240, 244, 248);
+            HeaderBar.BorderBrush = dark ? BrushFromRgb(70, 80, 99) : BrushFromRgb(199, 213, 230);
+            if (settingsPanel != null)
+            {
+                settingsPanel.Background = dark ? BrushFromRgb(40, 47, 62) : BrushFromRgb(247, 250, 254);
+                settingsPanel.BorderBrush = dark ? BrushFromRgb(70, 80, 99) : BrushFromRgb(199, 213, 230);
+            }
+
+            foreach (DependencyObject element in WalkVisualTree(WindowRootBorder))
+                ApplyThemeToElement(element, dark);
+        }
+
+        private static SolidColorBrush BrushFromRgb(byte red, byte green, byte blue)
+        {
+            return new SolidColorBrush(Color.FromRgb(red, green, blue));
+        }
+
+        private static System.Collections.Generic.IEnumerable<DependencyObject> WalkVisualTree(DependencyObject parent)
+        {
+            if (parent == null) yield break;
+            var visual = parent as Visual;
+            var visual3D = parent as System.Windows.Media.Media3D.Visual3D;
+            if (visual == null && visual3D == null) yield break;
+            yield return parent;
+            int childCount = VisualTreeHelper.GetChildrenCount(parent);
+            for (int i = 0; i < childCount; i++)
+            {
+                foreach (DependencyObject child in WalkVisualTree(VisualTreeHelper.GetChild(parent, i)))
+                    yield return child;
+            }
+        }
+
+        private static void ApplyThemeToElement(DependencyObject element, bool dark)
+        {
+            var control = element as System.Windows.Controls.Control;
+            if (control != null)
+            {
+                if (control.ReadLocalValue(System.Windows.Controls.Control.BackgroundProperty) != DependencyProperty.UnsetValue)
+                    control.Background = MapThemeBrush(control.Background, dark, false);
+                if (control.ReadLocalValue(System.Windows.Controls.Control.ForegroundProperty) != DependencyProperty.UnsetValue)
+                    control.Foreground = MapThemeBrush(control.Foreground, dark, true);
+                if (control.ReadLocalValue(System.Windows.Controls.Control.BorderBrushProperty) != DependencyProperty.UnsetValue)
+                    control.BorderBrush = MapThemeBrush(control.BorderBrush, dark, false);
+            }
+
+            var border = element as System.Windows.Controls.Border;
+            if (border != null && border.TemplatedParent == null)
+            {
+                border.Background = MapThemeBrush(border.Background, dark, false);
+                border.BorderBrush = MapThemeBrush(border.BorderBrush, dark, false);
+            }
+
+            var panel = element as System.Windows.Controls.Panel;
+            if (panel != null && panel.ReadLocalValue(System.Windows.Controls.Panel.BackgroundProperty) != DependencyProperty.UnsetValue)
+                panel.Background = MapThemeBrush(panel.Background, dark, false);
+
+            var text = element as System.Windows.Controls.TextBlock;
+            if (text != null)
+            {
+                if (text.ReadLocalValue(System.Windows.Controls.TextBlock.ForegroundProperty) != DependencyProperty.UnsetValue)
+                    text.Foreground = MapThemeBrush(text.Foreground, dark, true);
+                foreach (System.Windows.Documents.Inline inline in text.Inlines)
+                {
+                    var run = inline as System.Windows.Documents.Run;
+                    if (run != null) run.Foreground = MapThemeBrush(run.Foreground, dark, true);
+                }
+            }
+
+            var shape = element as System.Windows.Shapes.Shape;
+            if (shape != null)
+            {
+                shape.Fill = MapThemeBrush(shape.Fill, dark, false);
+                shape.Stroke = MapThemeBrush(shape.Stroke, dark, false);
+            }
+        }
+
+        private static Brush MapThemeBrush(Brush brush, bool dark, bool isText)
+        {
+            var solid = brush as SolidColorBrush;
+            if (solid == null || solid.Color.A == 0) return brush;
+            string key = string.Format("#{0:X2}{1:X2}{2:X2}", solid.Color.R, solid.Color.G, solid.Color.B);
+            string mapped = null;
+            if (isText)
+            {
+                if (dark)
+                {
+                    switch (key)
+                    {
+                        case "#111111": mapped = "#F1F5F9"; break;
+                        case "#172B4D": mapped = "#E2E8F0"; break;
+                        case "#43546B": mapped = "#CBD5E1"; break;
+                        case "#475569": mapped = "#CBD5E1"; break;
+                        case "#64748B": mapped = "#AAB8CA"; break;
+                        case "#0052FF": mapped = "#7FA5FF"; break;
+                        case "#087F70": mapped = "#4FD1B5"; break;
+                        case "#C45135": mapped = "#FF9A76"; break;
+                    }
+                }
+                else
+                {
+                    switch (key)
+                    {
+                        case "#F1F5F9": mapped = "#111111"; break;
+                        case "#E2E8F0": mapped = "#172B4D"; break;
+                        case "#CBD5E1": mapped = "#43546B"; break;
+                        case "#AAB8CA": mapped = "#64748B"; break;
+                        case "#7FA5FF": mapped = "#0052FF"; break;
+                        case "#4FD1B5": mapped = "#087F70"; break;
+                        case "#FF9A76": mapped = "#C45135"; break;
+                    }
+                }
+            }
+            else if (dark)
+            {
+                switch (key)
+                {
+                    case "#F7FAFE": mapped = "#1F2430"; break;
+                    case "#F0F4F8": mapped = "#282F3E"; break;
+                    case "#EDF4FC": mapped = "#293345"; break;
+                    case "#F8FAFC": mapped = "#252B38"; break;
+                    case "#FFFFFF": mapped = "#313949"; break;
+                    case "#F0EDFF": mapped = "#332E50"; break;
+                    case "#E8FAF5": mapped = "#203D37"; break;
+                    case "#FFF1E9": mapped = "#49352E"; break;
+                    case "#DBEAFE": mapped = "#263B57"; break;
+                    case "#C7D5E6": mapped = "#4B586D"; break;
+                    case "#B8CBE2": mapped = "#4B586D"; break;
+                    case "#A9C4E3": mapped = "#4B586D"; break;
+                    case "#E2E8F0": mapped = "#4B586D"; break;
+                    case "#D1C9FF": mapped = "#595081"; break;
+                    case "#B6EBDD": mapped = "#315D54"; break;
+                    case "#FFD3C2": mapped = "#634639"; break;
+                }
+            }
+            else
+            {
+                switch (key)
+                {
+                    case "#1F2430": mapped = "#F7FAFE"; break;
+                    case "#282F3E": mapped = "#F0F4F8"; break;
+                    case "#293345": mapped = "#EDF4FC"; break;
+                    case "#252B38": mapped = "#F8FAFC"; break;
+                    case "#313949": mapped = "#FFFFFF"; break;
+                    case "#332E50": mapped = "#F0EDFF"; break;
+                    case "#203D37": mapped = "#E8FAF5"; break;
+                    case "#49352E": mapped = "#FFF1E9"; break;
+                    case "#263B57": mapped = "#DBEAFE"; break;
+                    case "#4B586D": mapped = "#C7D5E6"; break;
+                    case "#595081": mapped = "#D1C9FF"; break;
+                    case "#315D54": mapped = "#B6EBDD"; break;
+                    case "#634639": mapped = "#FFD3C2"; break;
+                }
+            }
+            if (mapped == null) return brush;
+            var color = (Color)ColorConverter.ConvertFromString(mapped);
+            return new SolidColorBrush(Color.FromArgb(solid.Color.A, color.R, color.G, color.B));
         }
 
         private void ApplyStatisticsWindowWidth(bool isOpen)
@@ -237,7 +422,7 @@ namespace STStopwatch
                 MinimalTopStrip.Visibility = Visibility.Collapsed;
                 ControlsBar.Visibility = Visibility.Visible;
                 ControlsBar.Padding = new Thickness(0);
-                ControlsBar.Margin = new Thickness(0, 0, 0, 20);
+                ControlsBar.Margin = new Thickness(0, 0, 0, 56);
                 ButtonGrid.Width = 300;
                 ButtonGrid.Height = 76;
                 ButtonGrid.RowDefinitions[0].Height = new GridLength(36);
@@ -263,8 +448,8 @@ namespace STStopwatch
             {
                 var vm = DataContext as MainViewModel;
 
-                // Shift + Left Click toggles Super Minimized View!
-                if (Keyboard.Modifiers.HasFlag(ModifierKeys.Shift))
+                // Ctrl + Left Click toggles Super Minimized View.
+                if (Keyboard.Modifiers.HasFlag(ModifierKeys.Control))
                 {
                     if (vm != null)
                     {
@@ -275,7 +460,7 @@ namespace STStopwatch
                         }
                         else
                         {
-                            // Shift click returns / enters super minimized view
+                            // Ctrl click returns / enters super minimized view
                             vm.IsSuperMinimalMode = true;
                         }
                     }

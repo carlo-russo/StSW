@@ -3,9 +3,9 @@ using System.Collections.Generic;
 using System.IO;
 using System.Runtime.Serialization.Json;
 using System.Text;
-using STStopwatch.Models;
+using STStopwatch.Core.Models;
 
-namespace STStopwatch.Services
+namespace STStopwatch.Core.Services
 {
     public class JsonStorageService : IStorageService
     {

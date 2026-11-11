@@ -6,6 +6,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "STStopwatch", "STStopwatch\
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "STStopwatch.Tests", "STStopwatch.Tests\STStopwatch.Tests.csproj", "{B1F54B98-90D1-4A53-B04C-8D497BC26C78}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "STStopwatch.Core", "STStopwatch.Core\STStopwatch.Core.csproj", "{A5A68111-2D11-4DD7-B7F0-BA55C2C7B7F9}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -20,6 +22,10 @@ Global
 		{B1F54B98-90D1-4A53-B04C-8D497BC26C78}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{B1F54B98-90D1-4A53-B04C-8D497BC26C78}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{B1F54B98-90D1-4A53-B04C-8D497BC26C78}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A5A68111-2D11-4DD7-B7F0-BA55C2C7B7F9}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A5A68111-2D11-4DD7-B7F0-BA55C2C7B7F9}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A5A68111-2D11-4DD7-B7F0-BA55C2C7B7F9}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A5A68111-2D11-4DD7-B7F0-BA55C2C7B7F9}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

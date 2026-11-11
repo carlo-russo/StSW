@@ -1,20 +1,18 @@
-using System.Windows.Media;
-
-namespace STStopwatch.Models
+namespace STStopwatch.Core.Models
 {
     public class RingSessionSegment
     {
         public int SessionNumber { get; set; }
         public double StartAngleDeg { get; set; }
         public double EndAngleDeg { get; set; }
-        public Brush SegmentBrush { get; set; }
+        public string ThemeColorHex { get; set; }
 
-        public RingSessionSegment(int sessionNumber, double startAngleDeg, double endAngleDeg, Brush brush)
+        public RingSessionSegment(int sessionNumber, double startAngleDeg, double endAngleDeg, string themeColorHex)
         {
             SessionNumber = sessionNumber;
             StartAngleDeg = startAngleDeg;
             EndAngleDeg = endAngleDeg;
-            SegmentBrush = brush;
+            ThemeColorHex = themeColorHex;
         }
     }
 }

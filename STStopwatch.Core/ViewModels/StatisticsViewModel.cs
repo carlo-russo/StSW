@@ -2,11 +2,11 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Windows.Input;
-using STStopwatch.Common;
-using STStopwatch.Models;
-using STStopwatch.Services;
+using STStopwatch.Core.Common;
+using STStopwatch.Core.Models;
+using STStopwatch.Core.Services;
 
-namespace STStopwatch.ViewModels
+namespace STStopwatch.Core.ViewModels
 {
     public class StatisticsViewModel : ObservableObject
     {

@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 
-namespace STStopwatch.Models
+namespace STStopwatch.Core.Models
 {
     public class DaySummaryModel
     {

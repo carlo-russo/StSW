@@ -1,6 +1,6 @@
 using System;
 
-namespace STStopwatch.Services
+namespace STStopwatch.Core.Services
 {
     public interface ITimerEngine
     {

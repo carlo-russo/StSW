@@ -1,7 +1,7 @@
 using System;
 using System.Runtime.Serialization;
 
-namespace STStopwatch.Models
+namespace STStopwatch.Core.Models
 {
     [DataContract]
     public class UserSettings
@@ -20,6 +20,12 @@ namespace STStopwatch.Models
 
         [DataMember]
         public bool IsAutoFreeAreaEnabled { get; set; }
+
+        [DataMember]
+        public bool StartInSuperMinimalMode { get; set; }
+
+        [DataMember]
+        public string ThemeName { get; set; }
 
         [DataMember]
         public bool HasDismissedGettingStarted { get; set; }
@@ -46,6 +52,8 @@ namespace STStopwatch.Models
             IsMinimalMode = false;
             IsSuperMinimalMode = false;
             IsAutoFreeAreaEnabled = false;
+            StartInSuperMinimalMode = false;
+            ThemeName = "Light";
             HasDismissedGettingStarted = false;
             WindowLeft = -1;
             WindowTop = -1;

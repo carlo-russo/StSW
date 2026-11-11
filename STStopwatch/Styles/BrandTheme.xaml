@@ -166,7 +166,7 @@
                             Background="{TemplateBinding Background}"
                             BorderBrush="{TemplateBinding BorderBrush}"
                             BorderThickness="{TemplateBinding BorderThickness}"
-                            CornerRadius="4">
+                            CornerRadius="10">
                         <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
                     </Border>
                     <ControlTemplate.Triggers>
@@ -176,6 +176,80 @@
                         <Trigger Property="IsPressed" Value="True">
                             <Setter TargetName="border" Property="Background" Value="#E2E8F0"/>
                         </Trigger>
+                        <MultiDataTrigger>
+                            <MultiDataTrigger.Conditions>
+                                <Condition Binding="{Binding IsMouseOver, RelativeSource={RelativeSource TemplatedParent}}" Value="True"/>
+                                <Condition Binding="{Binding DataContext.ThemeName, RelativeSource={RelativeSource AncestorType=Window}}" Value="Dark"/>
+                            </MultiDataTrigger.Conditions>
+                            <Setter TargetName="border" Property="Background" Value="#3A4558"/>
+                        </MultiDataTrigger>
+                        <MultiDataTrigger>
+                            <MultiDataTrigger.Conditions>
+                                <Condition Binding="{Binding IsPressed, RelativeSource={RelativeSource TemplatedParent}}" Value="True"/>
+                                <Condition Binding="{Binding DataContext.ThemeName, RelativeSource={RelativeSource AncestorType=Window}}" Value="Dark"/>
+                            </MultiDataTrigger.Conditions>
+                            <Setter TargetName="border" Property="Background" Value="#46536B"/>
+                        </MultiDataTrigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <!-- Settings switches -->
+    <Style x:Key="SettingsToggleStyle" TargetType="CheckBox">
+        <Setter Property="Foreground" Value="#172B4D"/>
+        <Setter Property="FontFamily" Value="Segoe UI"/>
+        <Setter Property="FontSize" Value="13"/>
+        <Setter Property="Cursor" Value="Hand"/>
+        <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
+        <Setter Property="ContentTemplate">
+            <Setter.Value>
+                <DataTemplate>
+                    <TextBlock Text="{Binding}" TextWrapping="Wrap" VerticalAlignment="Center"/>
+                </DataTemplate>
+            </Setter.Value>
+        </Setter>
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="CheckBox">
+                    <Grid MinHeight="34">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="48"/>
+                        </Grid.ColumnDefinitions>
+                        <ContentPresenter Grid.Column="0" Margin="0,0,12,0" VerticalAlignment="Center"
+                                          Content="{TemplateBinding Content}"
+                                          ContentTemplate="{TemplateBinding ContentTemplate}"
+                                          RecognizesAccessKey="True"/>
+                        <Border x:Name="SwitchTrack" Grid.Column="1" Width="42" Height="24"
+                                HorizontalAlignment="Right" VerticalAlignment="Center"
+                                Background="#D5DDEA" BorderBrush="#B7C5D8" BorderThickness="1"
+                                CornerRadius="12">
+                            <Ellipse x:Name="SwitchThumb" Width="18" Height="18" Margin="2"
+                                     HorizontalAlignment="Left" Fill="#FFFFFF"/>
+                        </Border>
+                    </Grid>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsChecked" Value="True">
+                            <Setter TargetName="SwitchTrack" Property="Background" Value="#5B4CE2"/>
+                            <Setter TargetName="SwitchTrack" Property="BorderBrush" Value="#5B4CE2"/>
+                            <Setter TargetName="SwitchThumb" Property="HorizontalAlignment" Value="Right"/>
+                        </Trigger>
+                        <DataTrigger Binding="{Binding DataContext.ThemeName, RelativeSource={RelativeSource AncestorType=Window}}" Value="Dark">
+                            <Setter Property="Foreground" Value="#E2E8F0"/>
+                            <Setter TargetName="SwitchTrack" Property="Background" Value="#46536B"/>
+                            <Setter TargetName="SwitchTrack" Property="BorderBrush" Value="#68758A"/>
+                        </DataTrigger>
+                        <MultiDataTrigger>
+                            <MultiDataTrigger.Conditions>
+                                <Condition Binding="{Binding IsChecked, RelativeSource={RelativeSource TemplatedParent}}" Value="True"/>
+                                <Condition Binding="{Binding DataContext.ThemeName, RelativeSource={RelativeSource AncestorType=Window}}" Value="Dark"/>
+                            </MultiDataTrigger.Conditions>
+                            <Setter TargetName="SwitchTrack" Property="Background" Value="#8178F0"/>
+                            <Setter TargetName="SwitchTrack" Property="BorderBrush" Value="#A49DF7"/>
+                            <Setter TargetName="SwitchThumb" Property="HorizontalAlignment" Value="Right"/>
+                        </MultiDataTrigger>
                     </ControlTemplate.Triggers>
                 </ControlTemplate>
             </Setter.Value>

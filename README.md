@@ -131,7 +131,16 @@ c:\Users\sekoz\StartToday\
 ├── build.ps1                            # PowerShell automated build & test script
 ├── README.md                            # Comprehensive documentation
 │
-├── STStopwatch/                         # Main WPF Application Project
+├── STStopwatch.Core/                    # .NET Framework 4.8 class library
+│   ├── STStopwatch.Core.csproj
+│   ├── Common/
+│   │   ├── ObservableObject.cs          # MVVM INotifyPropertyChanged base
+│   │   └── RelayCommand.cs               # ICommand implementation
+│   ├── Models/                           # Session, settings, record and statistics data
+│   ├── Services/                         # Timer engine and JSON storage abstractions
+│   └── ViewModels/                       # Stopwatch and statistics application logic
+│
+├── STStopwatch/                         # Main WPF Application Project (references Core)
 │   ├── STStopwatch.csproj
 │   ├── App.xaml / App.xaml.cs           # Application entry & Tray lifecycle
 │   ├── MainWindow.xaml / .xaml.cs       # Frameless floating container
@@ -139,24 +148,13 @@ c:\Users\sekoz\StartToday\
 │   │   ├── app.ico                      # Multi-resolution ST application icon
 │   │   └── st_logo.png                  # High-res StartToday logo
 │   ├── Common/
-│   │   ├── ObservableObject.cs          # MVVM INotifyPropertyChanged base
-│   │   ├── RelayCommand.cs              # ICommand implementation
-│   │   └── Converters.cs                # Value converters (Visibility, Brush, Format)
+│   │   └── Converters.cs                # UI value converters (Visibility, Brush, Format)
 │   ├── Controls/
 │   │   ├── CircularProgressRing.xaml    # Circular arc and interactive drag node
 │   │   └── CircularProgressRing.xaml.cs
-│   ├── Models/
-│   │   ├── SessionModel.cs              # 12-session definitions & theme brushes
-│   │   ├── SessionRecord.cs             # Session log data contract
-│   │   ├── UserSettings.cs              # Window & target settings persistence
-│   │   └── StatisticsModels.cs          # Day and Month view aggregate models
 │   ├── Services/
-│   │   ├── ITimerEngine.cs / HighResolutionTimerEngine.cs
-│   │   ├── IStorageService.cs / JsonStorageService.cs
-│   │   └── ITrayService.cs / TrayService.cs
-│   ├── ViewModels/
-│   │   ├── MainViewModel.cs             # Stopwatch state & playback controls
-│   │   └── StatisticsViewModel.cs       # Day & Month aggregations & week totals
+│   │   ├── FreeRegionFinderService.cs   # Windows screen-positioning helper
+│   │   └── TrayService.cs               # Windows notification-area integration
 │   ├── Views/
 │   │   ├── DayViewControl.xaml / .cs    # Day view statistics table
 │   │   ├── MonthViewControl.xaml / .cs  # Month view table with week total column
@@ -168,7 +166,7 @@ c:\Users\sekoz\StartToday\
 │
 └── STStopwatch.Tests/                   # Automated Verification Test Suite
     ├── STStopwatch.Tests.csproj
-    └── Program.cs                       # 111 comprehensive tests (0 failures)
+    └── Program.cs                       # Tests reference STStopwatch.Core, not the WPF executable
 ```
 
 ---
@@ -194,8 +192,10 @@ build.bat
 
 ### Direct MSBuild Command
 ```powershell
-& "C:\Windows\Microsoft.NET\Framework64\v4.0.30319\MSBuild.exe" STStopwatch\STStopwatch.csproj /p:Configuration=Release
+& "C:\Windows\Microsoft.NET\Framework64\v4.0.30319\MSBuild.exe" STStopwatch.sln /p:Configuration=Release
 ```
+
+The solution builds `STStopwatch.Core.dll` separately. Both the WPF application and the test project reference this class library; the test project does not reference the application executable.
 
 ### Running the Application
 Launch the compiled executable directly:

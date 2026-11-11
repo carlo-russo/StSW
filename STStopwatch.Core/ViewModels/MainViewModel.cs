@@ -3,13 +3,12 @@ using System.Collections.ObjectModel;
 using System.Media;
 using System.Text.RegularExpressions;
 using System.Windows.Input;
-using System.Windows.Media;
 using System.Windows.Threading;
-using STStopwatch.Common;
-using STStopwatch.Models;
-using STStopwatch.Services;
+using STStopwatch.Core.Common;
+using STStopwatch.Core.Models;
+using STStopwatch.Core.Services;
 
-namespace STStopwatch.ViewModels
+namespace STStopwatch.Core.ViewModels
 {
     public class MainViewModel : ObservableObject
     {
@@ -29,8 +28,11 @@ namespace STStopwatch.ViewModels
         private bool _isMinimalMode;
         private bool _isSuperMinimalMode;
         private bool _isAutoFreeAreaEnabled;
+        private bool _startInSuperMinimalMode;
         private bool _isAlwaysOnTop;
         private bool _isStatisticsOpen;
+        private bool _isSettingsOpen;
+        private string _themeName;
         private bool _showGettingStarted;
         private DateTime _sessionStartTime;
         private DateTime _todayDurationDate;
@@ -52,9 +54,11 @@ namespace STStopwatch.ViewModels
             // Load settings
             UserSettings settings = _storageService.LoadSettings();
             _isAlwaysOnTop = settings.IsAlwaysOnTop;
-            _isMinimalMode = settings.IsMinimalMode;
-            _isSuperMinimalMode = settings.IsSuperMinimalMode;
+            _isSuperMinimalMode = settings.StartInSuperMinimalMode || settings.IsSuperMinimalMode;
+            _isMinimalMode = settings.IsMinimalMode || _isSuperMinimalMode;
             _isAutoFreeAreaEnabled = settings.IsAutoFreeAreaEnabled;
+            _startInSuperMinimalMode = settings.StartInSuperMinimalMode;
+            _themeName = string.IsNullOrEmpty(settings.ThemeName) ? "Light" : settings.ThemeName;
             _showGettingStarted = !settings.HasDismissedGettingStarted;
 
             // Global constant target duration
@@ -90,6 +94,7 @@ namespace STStopwatch.ViewModels
             ToggleAutoFreeAreaCommand = new RelayCommand(ExecuteToggleAutoFreeArea);
             ToggleAlwaysOnTopCommand = new RelayCommand(ExecuteToggleAlwaysOnTop);
             ToggleStatisticsCommand = new RelayCommand(ExecuteToggleStatistics);
+            ToggleSettingsCommand = new RelayCommand(() => IsSettingsOpen = !IsSettingsOpen);
             CloseCommand = new RelayCommand(ExecuteClose);
             SelectSessionCommand = new RelayCommand(ExecuteSelectSession);
             DismissGettingStartedCommand = new RelayCommand(ExecuteDismissGettingStarted);
@@ -132,9 +137,9 @@ namespace STStopwatch.ViewModels
             get { return string.Format("{0:D2} / 12", CurrentSessionNumber); }
         }
 
-        public SolidColorBrush CurrentSessionColor
+        public string CurrentSessionColorHex
         {
-            get { return CurrentSession.ThemeBrush; }
+            get { return CurrentSession.ThemeColorHex; }
         }
 
         public string SessionLabelText
@@ -307,6 +312,16 @@ namespace STStopwatch.ViewModels
             }
         }
 
+        public bool StartInSuperMinimalMode
+        {
+            get { return _startInSuperMinimalMode; }
+            set
+            {
+                if (SetProperty(ref _startInSuperMinimalMode, value, "StartInSuperMinimalMode"))
+                    SaveSettings();
+            }
+        }
+
         public bool IsAlwaysOnTop
         {
             get { return _isAlwaysOnTop; }
@@ -329,10 +344,40 @@ namespace STStopwatch.ViewModels
                 {
                     if (value)
                     {
+                        IsSettingsOpen = false;
                         StatisticsVM.Refresh();
                     }
                 }
             }
+        }
+
+        public bool IsSettingsOpen
+        {
+            get { return _isSettingsOpen; }
+            set
+            {
+                if (value) IsStatisticsOpen = false;
+                SetProperty(ref _isSettingsOpen, value, "IsSettingsOpen");
+            }
+        }
+
+        public string ThemeName
+        {
+            get { return _themeName; }
+            set
+            {
+                if (SetProperty(ref _themeName, value, "ThemeName"))
+                {
+                    OnPropertyChanged("IsDarkMode");
+                    SaveSettings();
+                }
+            }
+        }
+
+        public bool IsDarkMode
+        {
+            get { return string.Equals(ThemeName, "Dark", StringComparison.OrdinalIgnoreCase); }
+            set { ThemeName = value ? "Dark" : "Light"; }
         }
 
         public ICommand PlayPauseCommand { get; private set; }
@@ -343,6 +388,7 @@ namespace STStopwatch.ViewModels
         public ICommand ToggleAutoFreeAreaCommand { get; private set; }
         public ICommand ToggleAlwaysOnTopCommand { get; private set; }
         public ICommand ToggleStatisticsCommand { get; private set; }
+        public ICommand ToggleSettingsCommand { get; private set; }
         public ICommand CloseCommand { get; private set; }
         public ICommand SelectSessionCommand { get; private set; }
 
@@ -484,7 +530,7 @@ namespace STStopwatch.ViewModels
                         CurrentSessionNumber,
                         startAngle,
                         endAngle,
-                        CurrentSessionColor
+                        CurrentSessionColorHex
                     ));
                 }
             }
@@ -508,7 +554,7 @@ namespace STStopwatch.ViewModels
             OnPropertyChanged("CurrentSession");
             OnPropertyChanged("CurrentSessionNumber");
             OnPropertyChanged("CurrentSessionPillText");
-            OnPropertyChanged("CurrentSessionColor");
+            OnPropertyChanged("CurrentSessionColorHex");
             OnPropertyChanged("TotalElapsed");
             OnPropertyChanged("CompletedSegments");
 
@@ -556,7 +602,7 @@ namespace STStopwatch.ViewModels
                         OnPropertyChanged("CurrentSession");
                         OnPropertyChanged("CurrentSessionNumber");
                         OnPropertyChanged("CurrentSessionPillText");
-                        OnPropertyChanged("CurrentSessionColor");
+                        OnPropertyChanged("CurrentSessionColorHex");
 
                         SaveSettings();
                         UpdateTimerDisplay();
@@ -669,6 +715,8 @@ namespace STStopwatch.ViewModels
             settings.IsMinimalMode = IsMinimalMode;
             settings.IsSuperMinimalMode = IsSuperMinimalMode;
             settings.IsAutoFreeAreaEnabled = IsAutoFreeAreaEnabled;
+            settings.StartInSuperMinimalMode = StartInSuperMinimalMode;
+            settings.ThemeName = ThemeName;
             settings.HasDismissedGettingStarted = !ShowGettingStarted;
             settings.GlobalTargetDurationSeconds = TargetDuration.TotalSeconds;
             settings.CustomSessionLabelTemplate = _sessionLabelText;

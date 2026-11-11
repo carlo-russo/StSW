@@ -1,8 +1,7 @@
-C:\Users\sekoz\StartToday\STStopwatch.Tests\bin\Release\Assets\app.ico
 C:\Users\sekoz\StartToday\STStopwatch.Tests\bin\Release\STStopwatch.Tests.exe
 C:\Users\sekoz\StartToday\STStopwatch.Tests\bin\Release\STStopwatch.Tests.pdb
 C:\Users\sekoz\StartToday\STStopwatch.Tests\obj\Release\STStopwatch.Tests.csprojResolveAssemblyReference.cache
 C:\Users\sekoz\StartToday\STStopwatch.Tests\obj\Release\STStopwatch.Tests.exe
 C:\Users\sekoz\StartToday\STStopwatch.Tests\obj\Release\STStopwatch.Tests.pdb
-C:\Users\sekoz\StartToday\STStopwatch.Tests\bin\Release\STTimerQt.exe
-C:\Users\sekoz\StartToday\STStopwatch.Tests\bin\Release\STTimerQt.pdb
+C:\Users\sekoz\StartToday\STStopwatch.Tests\bin\Release\STStopwatch.Core.dll
+C:\Users\sekoz\StartToday\STStopwatch.Tests\bin\Release\STStopwatch.Core.pdb

@@ -6,7 +6,7 @@ using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Animation;
 using System.Windows.Shapes;
-using STStopwatch.Models;
+using STStopwatch.Core.Models;
 
 namespace STStopwatch.Controls
 {
@@ -150,8 +150,8 @@ namespace STStopwatch.Controls
         {
             get
             {
-                bool hasSegments = CompletedSegments != null && CompletedSegments.Count > 0;
-                return !IsRunning && TotalElapsed == TimeSpan.Zero && !hasSegments;
+                int completedSegmentCount = CompletedSegments != null ? CompletedSegments.Count : 0;
+                return RingProgressState.IsAtBeginning(IsRunning, TotalElapsed, completedSegmentCount);
             }
         }
 
@@ -517,9 +517,18 @@ namespace STStopwatch.Controls
                         var seg = CompletedSegments[i];
                         if (seg.EndAngleDeg > seg.StartAngleDeg)
                         {
+                            Brush segmentBrush;
+                            try
+                            {
+                                segmentBrush = new SolidColorBrush((Color)ColorConverter.ConvertFromString(seg.ThemeColorHex));
+                            }
+                            catch
+                            {
+                                segmentBrush = RingBrush;
+                            }
                             var segPath = new Path
                             {
-                                Stroke = seg.SegmentBrush,
+                                Stroke = segmentBrush,
                                 StrokeThickness = ProgressArcPath.StrokeThickness,
                                 StrokeStartLineCap = PenLineCap.Round,
                                 StrokeEndLineCap = PenLineCap.Round,

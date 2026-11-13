@@ -276,55 +276,50 @@ namespace STStopwatch
             AxisAngleRotation3D headNod, JointRig leftArm, JointRig rightArm,
             JointRig leftLeg, JointRig rightLeg)
         {
-            // Seven poses, with a short hold and an eased 0.4 second transition
-            // between each. The eighth point returns to the groove for a clean loop.
+            // Four continuous dance variations. Each two-second phrase has four
+            // moving beats; the last phrase resolves back into the opening groove.
             AddDanceTrack(bodyTurn, AxisAngleRotation3D.AngleProperty,
-                -8, 12, -14, 10, -18, 16, -4, -8);
+                -8, 3, 10, -2, -8, 12, -4, 13, -8, -15, 5, -15, -8, 10, -12, 7, -8);
             AddDanceTrack(headNod, AxisAngleRotation3D.AngleProperty,
-                -2, -5, 6, -4, 3, -6, 5, -2);
+                -2, 6, -4, 4, -2, -5, 2, -6, -2, 7, -4, 7, -2, 4, -6, 2, -2);
             AddDanceTrack(bob, TranslateTransform3D.OffsetYProperty,
-                0, .10, .03, .08, .02, .11, .05, 0);
+                0, .10, .02, .08, 0, .03, .12, .02, 0, .10, .02, .13, 0, .04, .11, .02, 0);
 
-            // Groove, side-step, disco reach, twist, wave, cross-step, celebration.
+            // Original groove, side-step, disco reach, twist/wave.
             AddDanceTrack(leftArm.Primary, AxisAngleRotation3D.AngleProperty,
-                -22, -66, -130, -42, -22, -100, -145, -22);
+                -22, -38, -14, -42, -22, -66, -46, -72, -52, -132, -110, -150, -112, -35, -62, -18, -22);
             AddDanceTrack(rightArm.Primary, AxisAngleRotation3D.AngleProperty,
-                22, 18, 130, 42, 110, 62, 145, 22);
+                22, 38, 14, 42, 22, 18, 35, 14, 22, 132, 110, 150, 112, 80, 115, 74, 22);
             AddDanceTrack(leftArm.Secondary, AxisAngleRotation3D.AngleProperty,
-                13, 40, -20, 52, 12, -42, -35, 13);
+                13, 30, 10, 36, 13, 40, 18, 44, 13, -20, 20, -30, -20, 40, 12, 46, 13);
             AddDanceTrack(rightArm.Secondary, AxisAngleRotation3D.AngleProperty,
-                -13, -8, 20, -52, 46, 35, 35, -13);
+                -13, -30, -10, -36, -13, -8, -35, -5, -13, 20, -20, 30, 13, -45, -10, -50, -13);
 
             AddDanceTrack(leftLeg.Primary, AxisAngleRotation3D.AngleProperty,
-                12, -28, 18, -35, 15, -16, 22, 12);
+                12, -8, 14, -15, 12, -28, -8, -32, 12, 18, -15, 22, 12, -35, -10, -30, 12);
             AddDanceTrack(rightLeg.Primary, AxisAngleRotation3D.AngleProperty,
-                -12, 20, -18, 25, -15, 24, -22, -12);
+                -12, 8, -14, 15, -12, 20, -8, 24, -12, -18, 15, -22, -12, 25, -15, 30, -12);
             AddDanceTrack(leftLeg.Secondary, AxisAngleRotation3D.AngleProperty,
-                8, 30, -10, 34, 12, 28, 32, 8);
+                8, 24, 4, 26, 8, 30, 12, 34, 8, -10, 22, -5, 8, 34, 14, 30, 8);
             AddDanceTrack(rightLeg.Secondary, AxisAngleRotation3D.AngleProperty,
-                -8, -12, 10, -30, -12, -34, -32, -8);
+                -8, -24, -4, -26, -8, -12, -30, -10, -8, 10, -22, 5, -8, -30, -14, -34, -8);
         }
 
         private static void AddDanceTrack(Animatable target, DependencyProperty property,
             params double[] poses)
         {
-            double[] times = { 0, .8, 1.2, 2, 2.4, 3.2, 3.6, 4.4, 4.8, 5.6, 6, 6.8, 7.2, 8, 8.4 };
-            double[] values =
-            {
-                poses[0], poses[0], poses[1], poses[1], poses[2], poses[2], poses[3], poses[3],
-                poses[4], poses[4], poses[5], poses[5], poses[6], poses[6], poses[7]
-            };
             var animation = new DoubleAnimationUsingKeyFrames
             {
                 Duration = TimeSpan.FromSeconds(8.4), RepeatBehavior = RepeatBehavior.Forever,
                 FillBehavior = FillBehavior.HoldEnd
             };
-            for (int i = 0; i < times.Length; i++)
+            for (int i = 0; i < poses.Length; i++)
             {
-                animation.KeyFrames.Add(new SplineDoubleKeyFrame(values[i],
-                    KeyTime.FromTimeSpan(TimeSpan.FromSeconds(times[i])))
+                double time = i * .525;
+                animation.KeyFrames.Add(new SplineDoubleKeyFrame(poses[i],
+                    KeyTime.FromTimeSpan(TimeSpan.FromSeconds(time)))
                 {
-                    KeySpline = new KeySpline(.42, 0, .58, 1)
+                    KeySpline = new KeySpline(.2, .1, .8, .9)
                 });
             }
             target.BeginAnimation(property, animation);

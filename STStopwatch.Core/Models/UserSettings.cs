@@ -25,6 +25,9 @@ namespace STStopwatch.Core.Models
         public bool StartInSuperMinimalMode { get; set; }
 
         [DataMember]
+        public bool IsGuideCompanionEnabled { get; set; }
+
+        [DataMember]
         public string ThemeName { get; set; }
 
         [DataMember]
@@ -53,6 +56,7 @@ namespace STStopwatch.Core.Models
             IsSuperMinimalMode = false;
             IsAutoFreeAreaEnabled = false;
             StartInSuperMinimalMode = false;
+            IsGuideCompanionEnabled = false;
             ThemeName = "Light";
             HasDismissedGettingStarted = false;
             WindowLeft = -1;

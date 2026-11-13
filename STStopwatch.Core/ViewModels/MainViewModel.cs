@@ -29,6 +29,7 @@ namespace STStopwatch.Core.ViewModels
         private bool _isSuperMinimalMode;
         private bool _isAutoFreeAreaEnabled;
         private bool _startInSuperMinimalMode;
+        private bool _isGuideCompanionEnabled;
         private bool _isAlwaysOnTop;
         private bool _isStatisticsOpen;
         private bool _isSettingsOpen;
@@ -58,6 +59,7 @@ namespace STStopwatch.Core.ViewModels
             _isMinimalMode = settings.IsMinimalMode || _isSuperMinimalMode;
             _isAutoFreeAreaEnabled = settings.IsAutoFreeAreaEnabled;
             _startInSuperMinimalMode = settings.StartInSuperMinimalMode;
+            _isGuideCompanionEnabled = settings.IsGuideCompanionEnabled;
             _themeName = string.IsNullOrEmpty(settings.ThemeName) ? "Light" : settings.ThemeName;
             _showGettingStarted = !settings.HasDismissedGettingStarted;
 
@@ -318,6 +320,16 @@ namespace STStopwatch.Core.ViewModels
             set
             {
                 if (SetProperty(ref _startInSuperMinimalMode, value, "StartInSuperMinimalMode"))
+                    SaveSettings();
+            }
+        }
+
+        public bool IsGuideCompanionEnabled
+        {
+            get { return _isGuideCompanionEnabled; }
+            set
+            {
+                if (SetProperty(ref _isGuideCompanionEnabled, value, "IsGuideCompanionEnabled"))
                     SaveSettings();
             }
         }
@@ -716,6 +728,7 @@ namespace STStopwatch.Core.ViewModels
             settings.IsSuperMinimalMode = IsSuperMinimalMode;
             settings.IsAutoFreeAreaEnabled = IsAutoFreeAreaEnabled;
             settings.StartInSuperMinimalMode = StartInSuperMinimalMode;
+            settings.IsGuideCompanionEnabled = IsGuideCompanionEnabled;
             settings.ThemeName = ThemeName;
             settings.HasDismissedGettingStarted = !ShowGettingStarted;
             settings.GlobalTargetDurationSeconds = TargetDuration.TotalSeconds;

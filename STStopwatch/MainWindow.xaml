@@ -391,6 +391,9 @@
                               Style="{StaticResource SettingsToggleStyle}" Margin="0,0,0,18"/>
                     <CheckBox Content="Automatically find a free screen area in super-minimized mode"
                               IsChecked="{Binding IsAutoFreeAreaEnabled, Mode=TwoWay}"
+                              Style="{StaticResource SettingsToggleStyle}" Margin="0,0,0,18"/>
+                    <CheckBox Content="Show Toki, your dancing StartToday guide beside the timer"
+                              IsChecked="{Binding IsGuideCompanionEnabled, Mode=TwoWay}"
                               Style="{StaticResource SettingsToggleStyle}"/>
                 </StackPanel>
             </Border>

@@ -24,6 +24,7 @@ namespace STStopwatch
         private FreeRegionFinderService _freeRegionService = new FreeRegionFinderService();
         private bool _isSmoothMoving;
         private bool _isEvaluatingRegion;
+        private GuideCompanionWindow _guideCompanion;
 
         public MainWindow()
         {
@@ -59,6 +60,7 @@ namespace STStopwatch
                         Top = Math.Max(0, settings.WindowTop);
                     }
                 }
+                SyncGuideCompanion(vm.IsGuideCompanionEnabled);
             }
         }
 
@@ -135,6 +137,48 @@ namespace STStopwatch
             {
                 UpdateAutoFreeRegionWatcher();
             }
+            if (e.PropertyName == "IsGuideCompanionEnabled")
+            {
+                var vm = DataContext as MainViewModel;
+                SyncGuideCompanion(vm != null && vm.IsGuideCompanionEnabled);
+            }
+        }
+
+        private void SyncGuideCompanion(bool enabled)
+        {
+            if (enabled)
+            {
+                if (_guideCompanion == null)
+                {
+                    _guideCompanion = new GuideCompanionWindow();
+                    PositionGuideCompanionBesideTimer();
+                    _guideCompanion.Show();
+                }
+            }
+            else if (_guideCompanion != null)
+            {
+                _guideCompanion.Close();
+                _guideCompanion = null;
+            }
+        }
+
+        private void PositionGuideCompanionBesideTimer()
+        {
+            double companionWidth = _guideCompanion.Width;
+            double companionHeight = _guideCompanion.Height;
+            double right = Left + ActualWidth;
+            double leftCandidate = Left - companionWidth;
+            bool fitsRight = right + companionWidth <= SystemParameters.VirtualScreenLeft + SystemParameters.VirtualScreenWidth;
+            bool fitsLeft = leftCandidate >= SystemParameters.VirtualScreenLeft;
+            double targetLeft = fitsRight || !fitsLeft ? right - 4 : leftCandidate + 4;
+            double targetTop = Top + Math.Max(0, (ActualHeight - companionHeight) / 2);
+            targetLeft = Math.Max(SystemParameters.VirtualScreenLeft,
+                Math.Min(targetLeft, SystemParameters.VirtualScreenLeft + SystemParameters.VirtualScreenWidth - companionWidth));
+            targetTop = Math.Max(SystemParameters.VirtualScreenTop,
+                Math.Min(targetTop, SystemParameters.VirtualScreenTop + SystemParameters.VirtualScreenHeight - companionHeight));
+
+            _guideCompanion.Left = targetLeft;
+            _guideCompanion.Top = targetTop;
         }
 
         private void ApplyTheme(string themeName)
@@ -729,6 +773,11 @@ namespace STStopwatch
 
         private void OnWindowClosing(object sender, CancelEventArgs e)
         {
+            if (_guideCompanion != null)
+            {
+                _guideCompanion.Close();
+                _guideCompanion = null;
+            }
             if (_autoFreeRegionWatcherTimer != null)
             {
                 _autoFreeRegionWatcherTimer.Stop();
